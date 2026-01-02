@@ -250,6 +250,66 @@ class CE_EuroStocks_Admin {
 
       <hr/>
 
+      <h2>Import Status & Statistieken</h2>
+
+      <?php
+      // Get current statistics
+      $db_count = wp_count_posts(CE_EuroStocks_Importer::CPT);
+      $db_total = ($db_count->publish ?? 0) + ($db_count->draft ?? 0) + ($db_count->pending ?? 0) + ($db_count->private ?? 0);
+      
+      $import_state = get_option('ce_eurostocks_import_state', array());
+      $total_api = !empty($_GET['total_api']) ? absint($_GET['total_api']) : ($import_state['total_records'] ?? 0);
+      $total_db = !empty($_GET['total_db']) ? absint($_GET['total_db']) : $db_total;
+      $progress = !empty($_GET['progress']) ? absint($_GET['progress']) : 0;
+      $current_page = !empty($_GET['current_page']) ? absint($_GET['current_page']) : 0;
+      $total_pages = !empty($_GET['total_pages']) ? absint($_GET['total_pages']) : 0;
+      $is_running = !empty($_GET['ce_continue']);
+      $is_complete = !empty($_GET['import_complete']);
+      ?>
+
+      <table class="widefat" style="max-width: 600px; margin-bottom: 20px;">
+        <thead>
+          <tr>
+            <th>Statistiek</th>
+            <th>Waarde</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Totaal in database</strong></td>
+            <td><?php echo esc_html(number_format($db_total, 0, ',', '.')); ?> producten</td>
+          </tr>
+          <?php if ($total_api > 0): ?>
+          <tr>
+            <td><strong>Totaal in EuroStocks API</strong></td>
+            <td><?php echo esc_html(number_format($total_api, 0, ',', '.')); ?> producten</td>
+          </tr>
+          <?php endif; ?>
+          <?php if ($current_page > 0 && $total_pages > 0): ?>
+          <tr>
+            <td><strong>Huidige pagina</strong></td>
+            <td><?php echo esc_html($current_page); ?> van <?php echo esc_html($total_pages); ?></td>
+          </tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+
+      <?php if ($is_running && $progress > 0): ?>
+      <div style="margin-bottom: 20px;">
+        <h3>Import voortgang: <?php echo esc_html($progress); ?>%</h3>
+        <div style="width: 100%; max-width: 600px; height: 30px; background: #f0f0f0; border-radius: 5px; overflow: hidden; border: 1px solid #ddd;">
+          <div style="width: <?php echo esc_attr($progress); ?>%; height: 100%; background: linear-gradient(90deg, #2271b1 0%, #135e96 100%); transition: width 0.3s ease;"></div>
+        </div>
+        <p style="margin-top: 8px;"><em>Import loopt... De pagina wordt automatisch ververst.</em></p>
+      </div>
+      <?php endif; ?>
+
+      <?php if ($is_complete): ?>
+      <div class="notice notice-success" style="max-width: 600px; padding: 12px; margin-bottom: 20px;">
+        <p style="margin: 0; font-size: 16px;"><strong>✅ Import compleet!</strong> Alle producten zijn succesvol gesynchroniseerd.</p>
+      </div>
+      <?php endif; ?>
+
       <h2>Tools</h2>
 
       <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline-block; margin-right: 12px;">
@@ -258,11 +318,15 @@ class CE_EuroStocks_Admin {
         <?php submit_button('Test Data API (languages)', 'secondary', 'submit', false); ?>
       </form>
 
-      <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline-block; margin-right: 12px;">
+      <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" id="ce-import-form" style="display:inline-block; margin-right: 12px;">
         <?php wp_nonce_field('ce_eurostocks_run_import'); ?>
         <input type="hidden" name="action" value="ce_eurostocks_run_import">
         <?php submit_button('Start import nu', 'primary', 'submit', false); ?>
       </form>
+
+      <?php if ($is_running): ?>
+      <button type="button" id="ce-stop-import" class="button" style="display:inline-block;">Stop import</button>
+      <?php endif; ?>
 
       <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline-block;">
         <?php wp_nonce_field('ce_eurostocks_purge'); ?>
@@ -279,14 +343,35 @@ class CE_EuroStocks_Admin {
 
       <?php if (!empty($_GET['ce_continue'])): ?>
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-  setTimeout(function(){
-    var forms = document.querySelectorAll('form[action*="admin-post.php"]');
-    for (var i=0;i<forms.length;i++){
-      if (forms[i].querySelector('input[name="action"][value="ce_eurostocks_run_import"]')) { forms[i].submit(); return; }
+(function(){
+  var autoSubmitTimer = null;
+  var stopButton = document.getElementById('ce-stop-import');
+  var importForm = document.getElementById('ce-import-form');
+  
+  function startAutoSubmit() {
+    autoSubmitTimer = setTimeout(function(){
+      if (importForm) {
+        importForm.submit();
+      }
+    }, 2000);
+  }
+  
+  function stopAutoSubmit() {
+    if (autoSubmitTimer) {
+      clearTimeout(autoSubmitTimer);
+      autoSubmitTimer = null;
     }
-  }, 800);
-});
+    // Redirect to settings page without continue parameter
+    window.location.href = <?php echo wp_json_encode(admin_url('options-general.php?page=ce-import&ce_msg=' . rawurlencode('Import gestopt door gebruiker'))); ?>;
+  }
+  
+  if (stopButton) {
+    stopButton.addEventListener('click', stopAutoSubmit);
+  }
+  
+  // Start auto-submit when DOM is ready
+  document.addEventListener('DOMContentLoaded', startAutoSubmit);
+})();
 </script>
 <?php endif; ?>
 
@@ -298,6 +383,63 @@ document.addEventListener('DOMContentLoaded', function(){
         <div class="notice notice-error" style="margin-top: 12px;"><p><?php echo esc_html(wp_unslash($_GET['ce_err'])); ?></p></div>
       <?php endif; ?>
 
+
+      <hr style="margin-top: 30px;"/>
+      
+      <h2>Import Logboek</h2>
+      <p class="description">Toont de laatste 10 import runs.</p>
+      
+      <?php
+      $import_log = get_option('ce_eurostocks_import_log', array());
+      $display_log = array_slice($import_log, 0, 10);
+      
+      if (!empty($display_log)):
+      ?>
+      <table class="widefat" style="max-width: 900px;">
+        <thead>
+          <tr>
+            <th>Datum/Tijd</th>
+            <th>Toegevoegd</th>
+            <th>Overgeslagen</th>
+            <th>Fouten</th>
+            <th>Pagina</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($display_log as $entry): ?>
+          <tr>
+            <td><?php echo esc_html($entry['timestamp'] ?? '-'); ?></td>
+            <td><?php echo esc_html($entry['upserts'] ?? 0); ?></td>
+            <td><?php echo esc_html($entry['skipped'] ?? 0); ?></td>
+            <td><?php echo esc_html($entry['errors'] ?? 0); ?></td>
+            <td>
+              <?php 
+              if (!empty($entry['page']) && !empty($entry['total_pages'])) {
+                echo esc_html($entry['page']) . ' / ' . esc_html($entry['total_pages']);
+              } else {
+                echo '-';
+              }
+              ?>
+            </td>
+            <td>
+              <?php
+              if (!empty($entry['completed'])) {
+                echo '<span style="color: green; font-weight: bold;">✓ Compleet</span>';
+              } elseif (!empty($entry['continue'])) {
+                echo '<span style="color: orange;">⟳ Bezig...</span>';
+              } else {
+                echo '-';
+              }
+              ?>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+      <?php else: ?>
+      <p><em>Nog geen imports uitgevoerd.</em></p>
+      <?php endif; ?>
     </div>
     <?php
   }
@@ -325,20 +467,73 @@ document.addEventListener('DOMContentLoaded', function(){
 
     $result = CE_EuroStocks_Importer::run_import();
 
+    // Log this import run
+    self::log_import_run($result);
+
     if (!empty($result['error'])) {
       wp_redirect(CE_EuroStocks_Helpers::admin_url_with_msg(array('ce_err' => rawurlencode($result['error']))));
       exit;
     }
 
-    $msg = sprintf('Import batch klaar. Upserts: %d. Skipped: %d. Errors: %d.', $result['upserts'], $result['skipped'], $result['errors']);
+    // Build detailed message
+    $msg = sprintf('Batch klaar: %d toegevoegd/bijgewerkt, %d overgeslagen, %d fouten', 
+      $result['upserts'], $result['skipped'], $result['errors']);
+    
+    // Add progress info if available
+    if (!empty($result['current_page']) && !empty($result['total_pages'])) {
+      $msg .= sprintf(' | Pagina %d van %d (%d%%)', 
+        $result['current_page'], $result['total_pages'], $result['progress']);
+    }
+    
+    if (!empty($result['total_records'])) {
+      $msg .= sprintf(' | Totaal API: %d', $result['total_records']);
+    }
+    
+    if (!empty($result['db_total'])) {
+      $msg .= sprintf(' | In database: %d', $result['db_total']);
+    }
+
+    $params = array('ce_msg' => rawurlencode($msg));
+    
+    // Add statistics to URL for display
+    if (!empty($result['total_records'])) $params['total_api'] = $result['total_records'];
+    if (!empty($result['db_total'])) $params['total_db'] = $result['db_total'];
+    if (!empty($result['progress'])) $params['progress'] = $result['progress'];
 
     if (!empty($result['continue'])) {
-      $msg .= ' Doorgaan met volgende batch…';
-      wp_redirect(CE_EuroStocks_Helpers::admin_url_with_msg(array('ce_msg' => rawurlencode($msg), 'ce_continue' => 1)));
+      $params['ce_continue'] = 1;
+      $params['current_page'] = $result['current_page'] ?? 0;
+      $params['total_pages'] = $result['total_pages'] ?? 0;
+      wp_redirect(CE_EuroStocks_Helpers::admin_url_with_msg($params));
       exit;
     }
-    wp_redirect(CE_EuroStocks_Helpers::admin_url_with_msg(array('ce_msg' => rawurlencode($msg))));
+    
+    // Import completed
+    $params['import_complete'] = 1;
+    wp_redirect(CE_EuroStocks_Helpers::admin_url_with_msg($params));
     exit;
+  }
+  
+  private static function log_import_run($result) {
+    $log = get_option('ce_eurostocks_import_log', array());
+    
+    $entry = array(
+      'timestamp' => current_time('mysql'),
+      'upserts' => $result['upserts'] ?? 0,
+      'skipped' => $result['skipped'] ?? 0,
+      'errors' => $result['errors'] ?? 0,
+      'continue' => !empty($result['continue']),
+      'page' => $result['current_page'] ?? null,
+      'total_pages' => $result['total_pages'] ?? null,
+      'completed' => !empty($result['completed']),
+    );
+    
+    array_unshift($log, $entry);
+    
+    // Keep last 50 entries
+    $log = array_slice($log, 0, 50);
+    
+    update_option('ce_eurostocks_import_log', $log);
   }
 
   public static function handle_test_image() {

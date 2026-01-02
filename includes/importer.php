@@ -172,6 +172,10 @@ class CE_EuroStocks_Importer {
       return array('upserts' => $upserts, 'skipped' => $skipped, 'errors' => ++$errors, 'error' => $list->get_error_message());
     }
 
+    // Track API statistics
+    $total_records = isset($list['TotalRecords']) ? (int)$list['TotalRecords'] : 0;
+    $total_pages = isset($list['TotalPages']) ? (int)$list['TotalPages'] : 0;
+    
     $results = isset($list['Results']) && is_array($list['Results']) ? $list['Results'] : array();
     if (empty($results)) break;
 
@@ -196,8 +200,21 @@ class CE_EuroStocks_Importer {
 
       // Time budget check
       if ((microtime(true) - $start) > $max_runtime) {
-        update_option('ce_eurostocks_import_state', array('page' => $page));
-        return array('upserts' => $upserts, 'skipped' => $skipped, 'errors' => $errors, 'continue' => 1);
+        update_option('ce_eurostocks_import_state', array('page' => $page, 'total_pages' => $total_pages, 'total_records' => $total_records));
+        // Get current DB count
+        $db_count = wp_count_posts(self::CPT);
+        $db_total = ($db_count->publish ?? 0) + ($db_count->draft ?? 0) + ($db_count->pending ?? 0) + ($db_count->private ?? 0);
+        return array(
+          'upserts' => $upserts, 
+          'skipped' => $skipped, 
+          'errors' => $errors, 
+          'continue' => 1,
+          'current_page' => $page,
+          'total_pages' => $total_pages,
+          'total_records' => $total_records,
+          'db_total' => $db_total,
+          'progress' => $total_pages > 0 ? round(($page / $total_pages) * 100) : 0
+        );
       }
     }
 
@@ -209,7 +226,26 @@ class CE_EuroStocks_Importer {
     if (!empty($opts['mark_missing_out_of_stock'])) {
       self::mark_missing_out_of_stock($run_id);
     }
-    return array('upserts' => $upserts, 'skipped' => $skipped, 'errors' => $errors);
+    
+    // Get final statistics
+    $db_count = wp_count_posts(self::CPT);
+    $db_total = ($db_count->publish ?? 0) + ($db_count->draft ?? 0) + ($db_count->pending ?? 0) + ($db_count->private ?? 0);
+    
+    // Retrieve total from state if available
+    $final_state = get_option('ce_eurostocks_import_final_state', array());
+    $total_records = $final_state['total_records'] ?? 0;
+    $total_pages = $final_state['total_pages'] ?? 0;
+    delete_option('ce_eurostocks_import_final_state');
+    
+    return array(
+      'upserts' => $upserts, 
+      'skipped' => $skipped, 
+      'errors' => $errors,
+      'total_records' => $total_records,
+      'total_pages' => $total_pages,
+      'db_total' => $db_total,
+      'completed' => 1
+    );
   }
 
   private static function matches_import_mode($details, $mode) {
