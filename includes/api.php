@@ -1,7 +1,7 @@
 <?php
 if (!defined('ABSPATH')) { exit; }
 
-class CPL_EuroStocks_API {
+class CE_EuroStocks_API {
 
   public static function headers($opts, $is_json) {
     $h = array(

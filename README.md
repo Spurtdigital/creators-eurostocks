@@ -3,7 +3,7 @@
 WordPress plugin voor het importeren en synchroniseren van automotoren en versnellingsbakken vanuit de EuroStocks API.
 
 ## Versie
-0.4.0
+0.5.0
 
 ## Vereisten
 - WordPress 5.8+
@@ -14,7 +14,7 @@ WordPress plugin voor het importeren en synchroniseren van automotoren en versne
 
 1. Upload de plugin naar `wp-content/plugins/creators-eurostocks/`
 2. Activeer de plugin via WordPress admin → Plugins
-3. Ga naar Instellingen → EuroStocks Import
+3. Ga naar Instellingen → Creators EuroStocks Import
 4. Vul je EuroStocks API credentials in
 5. Configureer de import instellingen
 6. Klik op "Start import nu" om de eerste import te draaien
@@ -36,23 +36,23 @@ WordPress plugin voor het importeren en synchroniseren van automotoren en versne
 
 ## Custom Post Type
 
-De plugin maakt een Custom Post Type aan: `cpl_part`
+De plugin maakt een Custom Post Type aan: `ce_part`
 - **Slug**: `/automotoren/`
 - **Label**: Onderdelen
 - **Ondersteunt**: Title, Editor, Featured Image, Excerpt
 
 ## Taxonomieën
 
-### cpl_make (Merken)
+### ce_make (Merken)
 Auto merken zoals Mercedes, BMW, Audi, etc.
 
-### cpl_model (Modellen)
+### ce_model (Modellen)
 Automodellen zoals C-Klasse, 3-Serie, A4, etc.
 
-### cpl_engine_code (Motorcodes)
+### ce_engine_code (Motorcodes)
 Specifieke motorcodes zoals OM651, N47, etc.
 
-### cpl_part_type (Type onderdeel)
+### ce_part_type (Type onderdeel)
 - Automotor
 - Versnellingsbak
 
@@ -95,72 +95,72 @@ Complete tabel met alle specificaties:
 
 ## Beschikbare Velden
 
-De plugin slaat alle EuroStocks data op als WordPress custom fields met het `_cpl_` prefix:
+De plugin slaat alle EuroStocks data op als WordPress custom fields met het `_ce_` prefix:
 
 ### Basis Informatie
-- `_cpl_eurostocks_ad_id` - EuroStocks advertentie ID
-- `_cpl_stock` - Voorraad aantal
-- `_cpl_condition` - Conditie (nieuw, gebruikt, etc.)
-- `_cpl_delivery` - Levering informatie
-- `_cpl_subcategory` - Subcategorie
-- `_cpl_product_type` - Product type
+- `_ce_eurostocks_ad_id` - EuroStocks advertentie ID
+- `_ce_stock` - Voorraad aantal
+- `_ce_condition` - Conditie (nieuw, gebruikt, etc.)
+- `_ce_delivery` - Levering informatie
+- `_ce_subcategory` - Subcategorie
+- `_ce_product_type` - Product type
 
 ### Prijs
-- `_cpl_price` - Prijs
-- `_cpl_price_currency` - Valuta (EUR, USD, etc.)
-- `_cpl_price_vat_percentage` - BTW percentage
-- `_cpl_price_incl_vat` - Prijs inclusief BTW
-- `_cpl_price_ex_vat` - Flag: Prijs is exclusief BTW (0/1)
+- `_ce_price` - Prijs
+- `_ce_price_currency` - Valuta (EUR, USD, etc.)
+- `_ce_price_vat_percentage` - BTW percentage
+- `_ce_price_incl_vat` - Prijs inclusief BTW
+- `_ce_price_ex_vat` - Flag: Prijs is exclusief BTW (0/1)
 
 ### Product Specificaties
-- `_cpl_ean` - EAN barcode
-- `_cpl_sku` - SKU nummer
-- `_cpl_weight` - Gewicht
-- `_cpl_height` - Hoogte
-- `_cpl_width` - Breedte
-- `_cpl_length` - Lengte
-- `_cpl_color` - Kleur
-- `_cpl_year` - Bouwjaar
+- `_ce_ean` - EAN barcode
+- `_ce_sku` - SKU nummer
+- `_ce_weight` - Gewicht
+- `_ce_height` - Hoogte
+- `_ce_width` - Breedte
+- `_ce_length` - Lengte
+- `_ce_color` - Kleur
+- `_ce_year` - Bouwjaar
 
 ### Motor Specificaties
-- `_cpl_engine_capacity` - Motorinhoud (cc)
-- `_cpl_power_kw` - Vermogen in kW
-- `_cpl_power_hp` - Vermogen in pk
-- `_cpl_fuel` - Brandstof (geparsed uit beschrijving)
-- `_cpl_fuel_type` - Brandstof type (direct uit API)
+- `_ce_engine_capacity` - Motorinhoud (cc)
+- `_ce_power_kw` - Vermogen in kW
+- `_ce_power_hp` - Vermogen in pk
+- `_ce_fuel` - Brandstof (geparsed uit beschrijving)
+- `_ce_fuel_type` - Brandstof type (direct uit API)
 
 ### Versnellingsbak
-- `_cpl_transmission` - Transmissie type
-- `_cpl_gear_type` - Versnellingsbak type
+- `_ce_transmission` - Transmissie type
+- `_ce_gear_type` - Versnellingsbak type
 
 ### Identificatie
-- `_cpl_manufacturer` - Fabrikant
-- `_cpl_part_number` - Onderdeelnummer
-- `_cpl_oem_number` - OEM nummer
+- `_ce_manufacturer` - Fabrikant
+- `_ce_part_number` - Onderdeelnummer
+- `_ce_oem_number` - OEM nummer
 
 ### Kilometerstand & Garantie
-- `_cpl_km_raw` - Kilometerstand (ruwe tekst)
-- `_cpl_km_value` - Kilometerstand (numeriek)
-- `_cpl_warranty_raw` - Garantie (ruwe tekst)
-- `_cpl_warranty_months` - Garantie in maanden
+- `_ce_km_raw` - Kilometerstand (ruwe tekst)
+- `_ce_km_value` - Kilometerstand (numeriek)
+- `_ce_warranty_raw` - Garantie (ruwe tekst)
+- `_ce_warranty_months` - Garantie in maanden
 
 ### Afbeeldingen
-- `_cpl_images` - JSON array met alle afbeelding URLs
-- `_cpl_gallery` - JSON array met WordPress attachment IDs
-- `_cpl_image_refs` - Referentie URLs om dubbel downloaden te voorkomen
+- `_ce_images` - JSON array met alle afbeelding URLs
+- `_ce_gallery` - JSON array met WordPress attachment IDs
+- `_ce_image_refs` - Referentie URLs om dubbel downloaden te voorkomen
 
 ### Leverancier & Locatie
-- `_cpl_location` - Locatie/opslagplaats
-- `_cpl_supplier_name` - Leverancier naam
-- `_cpl_supplier_id` - Leverancier ID
+- `_ce_location` - Locatie/opslagplaats
+- `_ce_supplier_name` - Leverancier naam
+- `_ce_supplier_id` - Leverancier ID
 
 ### Datums
-- `_cpl_created_date` - Aanmaakdatum
-- `_cpl_last_updated_date` - Laatst gewijzigd datum
-- `_cpl_last_seen` - Laatst gezien in import (run ID)
+- `_ce_created_date` - Aanmaakdatum
+- `_ce_last_updated_date` - Laatst gewijzigd datum
+- `_ce_last_seen` - Laatst gezien in import (run ID)
 
 ### Debug
-- `_cpl_raw_details` - Volledige API response (JSON)
+- `_ce_raw_details` - Volledige API response (JSON)
 
 ## Template Gebruik
 
@@ -170,27 +170,27 @@ De plugin biedt helper functions voor eenvoudig gebruik in templates:
 
 ```php
 // Basis veld ophalen
-$stock = CPL_EuroStocks_Helpers::get_field('_cpl_stock');
+$stock = CE_EuroStocks_Helpers::get_field('_ce_stock');
 
 // Prijs geformatteerd
-$price = CPL_EuroStocks_Helpers::get_price(); // € 2.500,00
+$price = CE_EuroStocks_Helpers::get_price(); // € 2.500,00
 
 // Voorraad status
-if (CPL_EuroStocks_Helpers::is_in_stock()) {
+if (CE_EuroStocks_Helpers::is_in_stock()) {
   echo 'Op voorraad!';
 }
 
 // Kilometerstand geformatteerd
-$km = CPL_EuroStocks_Helpers::get_mileage(); // 125.000 km
+$km = CE_EuroStocks_Helpers::get_mileage(); // 125.000 km
 
 // Garantie geformatteerd
-$warranty = CPL_EuroStocks_Helpers::get_warranty(); // 12 maanden garantie
+$warranty = CE_EuroStocks_Helpers::get_warranty(); // 12 maanden garantie
 
 // Gallery
-$gallery_ids = CPL_EuroStocks_Helpers::get_gallery();
+$gallery_ids = CE_EuroStocks_Helpers::get_gallery();
 
 // Specificaties als array
-$specs = CPL_EuroStocks_Helpers::get_specifications();
+$specs = CE_EuroStocks_Helpers::get_specifications();
 ```
 
 ### Single Template Voorbeeld
@@ -206,7 +206,7 @@ Maak een bestand: `single-cpl_part.php` in je thema:
     <div class="part-header">
       <h1><?php the_title(); ?></h1>
       
-      <?php if (CPL_EuroStocks_Helpers::is_in_stock()): ?>
+      <?php if (CE_EuroStocks_Helpers::is_in_stock()): ?>
         <span class="badge in-stock">Op voorraad</span>
       <?php else: ?>
         <span class="badge out-of-stock">Niet op voorraad</span>
@@ -226,7 +226,7 @@ Maak een bestand: `single-cpl_part.php` in je thema:
         
         <!-- Gallery -->
         <?php 
-        $gallery = CPL_EuroStocks_Helpers::get_gallery();
+        $gallery = CE_EuroStocks_Helpers::get_gallery();
         if (!empty($gallery)): 
         ?>
           <div class="gallery">
@@ -241,8 +241,8 @@ Maak een bestand: `single-cpl_part.php` in je thema:
 
       <!-- Prijs -->
       <div class="part-price">
-        <h2><?php echo CPL_EuroStocks_Helpers::get_price(); ?></h2>
-        <?php if (CPL_EuroStocks_Helpers::get_field('_cpl_price_ex_vat')): ?>
+        <h2><?php echo CE_EuroStocks_Helpers::get_price(); ?></h2>
+        <?php if (CE_EuroStocks_Helpers::get_field('_ce_price_ex_vat')): ?>
           <p class="vat-notice">Excl. BTW</p>
         <?php endif; ?>
       </div>
@@ -251,7 +251,7 @@ Maak een bestand: `single-cpl_part.php` in je thema:
       <div class="part-specs">
         <h3>Specificaties</h3>
         <?php 
-        $specs = CPL_EuroStocks_Helpers::get_specifications();
+        $specs = CE_EuroStocks_Helpers::get_specifications();
         if (!empty($specs)): 
         ?>
           <table class="specs-table">
@@ -332,7 +332,7 @@ Maak een bestand: `archive-cpl_part.php` in je thema:
               <div class="part-thumbnail">
                 <?php the_post_thumbnail('medium'); ?>
                 
-                <?php if (!CPL_EuroStocks_Helpers::is_in_stock()): ?>
+                <?php if (!CE_EuroStocks_Helpers::is_in_stock()): ?>
                   <span class="out-of-stock-overlay">Niet op voorraad</span>
                 <?php endif; ?>
               </div>
@@ -343,21 +343,21 @@ Maak een bestand: `archive-cpl_part.php` in je thema:
               <h2><?php the_title(); ?></h2>
               
               <!-- Prijs -->
-              <?php if ($price = CPL_EuroStocks_Helpers::get_price()): ?>
+              <?php if ($price = CE_EuroStocks_Helpers::get_price()): ?>
                 <p class="price"><?php echo $price; ?></p>
               <?php endif; ?>
 
               <!-- Snelle specs -->
               <ul class="quick-specs">
-                <?php if ($km = CPL_EuroStocks_Helpers::get_mileage()): ?>
+                <?php if ($km = CE_EuroStocks_Helpers::get_mileage()): ?>
                   <li><strong>Km:</strong> <?php echo esc_html($km); ?></li>
                 <?php endif; ?>
                 
-                <?php if ($fuel = CPL_EuroStocks_Helpers::get_field('_cpl_fuel')): ?>
+                <?php if ($fuel = CE_EuroStocks_Helpers::get_field('_ce_fuel')): ?>
                   <li><strong>Brandstof:</strong> <?php echo esc_html($fuel); ?></li>
                 <?php endif; ?>
                 
-                <?php if ($warranty = CPL_EuroStocks_Helpers::get_warranty()): ?>
+                <?php if ($warranty = CE_EuroStocks_Helpers::get_warranty()): ?>
                   <li><strong>Garantie:</strong> <?php echo esc_html($warranty); ?></li>
                 <?php endif; ?>
               </ul>
@@ -550,23 +550,23 @@ Als je liever direct met WordPress functies werkt:
 
 ```php
 // Prijs ophalen
-$price = get_post_meta(get_the_ID(), '_cpl_price', true);
+$price = get_post_meta(get_the_ID(), '_ce_price', true);
 echo '€ ' . number_format((float)$price, 2, ',', '.');
 
 // Voorraad checken
-$stock = (int)get_post_meta(get_the_ID(), '_cpl_stock', true);
+$stock = (int)get_post_meta(get_the_ID(), '_ce_stock', true);
 if ($stock > 0) {
   echo 'Op voorraad: ' . $stock;
 }
 
 // Kilometerstand
-$km = get_post_meta(get_the_ID(), '_cpl_km_value', true);
+$km = get_post_meta(get_the_ID(), '_ce_km_value', true);
 if ($km) {
   echo number_format((int)$km, 0, ',', '.') . ' km';
 }
 
 // Gallery IDs
-$gallery_json = get_post_meta(get_the_ID(), '_cpl_gallery', true);
+$gallery_json = get_post_meta(get_the_ID(), '_ce_gallery', true);
 $gallery = json_decode($gallery_json, true);
 if (is_array($gallery)) {
   foreach ($gallery as $attachment_id) {
@@ -589,15 +589,15 @@ Als je WooCommerce gebruikt, kun je producten automatisch creëren:
 
 ```php
 // Voeg dit toe aan functions.php
-add_action('save_post_cpl_part', 'sync_to_woocommerce', 10, 1);
+add_action('save_post_ce_part', 'sync_to_woocommerce', 10, 1);
 
 function sync_to_woocommerce($post_id) {
   // Check if WooCommerce is active
   if (!class_exists('WooCommerce')) return;
   
   // Get price
-  $price = get_post_meta($post_id, '_cpl_price', true);
-  $stock = get_post_meta($post_id, '_cpl_stock', true);
+  $price = get_post_meta($post_id, '_ce_price', true);
+  $stock = get_post_meta($post_id, '_ce_stock', true);
   
   // Create or update WooCommerce product
   // ... implementatie hier
@@ -613,7 +613,7 @@ function sync_to_woocommerce($post_id) {
 
 ### Afbeeldingen worden niet gedownload
 - Controleer of `download_images` is aangevinkt
-- Check `_cpl_image_errors` meta field voor foutmeldingen
+- Check `_ce_image_errors` meta field voor foutmeldingen
 - Verhoog PHP `memory_limit` en `upload_max_filesize`
 
 ### Geen producten zichtbaar

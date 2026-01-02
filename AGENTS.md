@@ -1,14 +1,14 @@
 # AGENTS.md - Developer Guide
 
-This guide is for AI coding agents working on the CPL Engines EuroStocks Importer WordPress plugin.
+This guide is for AI coding agents working on the Creators EuroStocks Importer WordPress plugin.
 
 ## Project Overview
 
-**Plugin Name:** CPL Engines – EuroStocks Importer  
+**Plugin Name:** Creators EuroStocks Importer  
 **Type:** WordPress Plugin  
 **Language:** PHP 7.4+  
 **WordPress Version:** 5.8+  
-**Version:** 0.3.7
+**Version:** 0.5.0
 
 WordPress plugin that imports auto parts (engines and gearboxes) from the EuroStocks API into a Custom Post Type with taxonomies. Supports scheduled syncing via WP-Cron and manual imports through the admin interface.
 
@@ -57,10 +57,10 @@ No linter/formatter configured. Follow WordPress coding standards manually.
 if (!defined('ABSPATH')) { exit; }
 ```
 
-**Class Names:** PascalCase with `CPL_EuroStocks_` prefix
+**Class Names:** PascalCase with `CE_EuroStocks_` prefix
 ```php
-class CPL_EuroStocks_Importer { }
-class CPL_EuroStocks_API { }
+class CE_EuroStocks_Importer { }
+class CE_EuroStocks_API { }
 ```
 
 **Method Names:** snake_case
@@ -78,8 +78,8 @@ $desc_for_parse = 'Merk: BMW...';
 
 **Constants:** SCREAMING_SNAKE_CASE
 ```php
-const CPT = 'cpl_part';
-const META_EXT_ID = '_cpl_eurostocks_ad_id';
+const CPT = 'ce_part';
+const META_EXT_ID = '_ce_eurostocks_ad_id';
 ```
 
 **Array Syntax:** Use `array()` not `[]` (WordPress standard)
@@ -128,13 +128,13 @@ check_admin_referer('cpl_eurostocks_run_import');
 
 **Hooks:** Use WordPress action/filter system
 ```php
-add_action('init', array('CPL_EuroStocks_Importer', 'register_cpt_and_taxonomies'));
-add_action('admin_menu', array('CPL_EuroStocks_Admin', 'menu'));
+add_action('init', array('CE_EuroStocks_Importer', 'register_cpt_and_taxonomies'));
+add_action('admin_menu', array('CE_EuroStocks_Admin', 'menu'));
 ```
 
 **Database:** Use WordPress functions, not direct SQL
 ```php
-update_post_meta($post_id, '_cpl_stock', (int)$details['stock']);
+update_post_meta($post_id, '_ce_stock', (int)$details['stock']);
 $existing = get_posts(array('post_type' => self::CPT, 'meta_key' => self::META_EXT_ID));
 ```
 
@@ -163,7 +163,7 @@ $title = (string)($productInfo['PRODUCT_TITLE'] ?? 'Default');
 **Silent failure for metadata:**
 ```php
 // Don't fail import if one field is missing
-if (isset($details['stock'])) update_post_meta($post_id, '_cpl_stock', (int)$details['stock']);
+if (isset($details['stock'])) update_post_meta($post_id, '_ce_stock', (int)$details['stock']);
 ```
 
 ### Comments
@@ -182,29 +182,29 @@ $response = wp_remote_get($url, array(
 
 ### Naming Conventions
 
-**Post Meta Keys:** Prefix with `_cpl_`
+**Post Meta Keys:** Prefix with `_ce_`
 ```php
-_cpl_eurostocks_ad_id
-_cpl_stock
-_cpl_km_value
-_cpl_warranty_months
+_ce_eurostocks_ad_id
+_ce_stock
+_ce_km_value
+_ce_warranty_months
 ```
 
 **Options:** Use plugin-specific prefix
 ```php
-cpl_engines_eurostocks
-cpl_eurostocks_run_id
-cpl_eurostocks_import_state
+ce_eurostocks
+ce_eurostocks_run_id
+ce_eurostocks_import_state
 ```
 
 **Taxonomies:** Use `cpl_` prefix
 ```php
-cpl_make, cpl_model, cpl_engine_code, cpl_part_type
+ce_make, ce_model, ce_engine_code, ce_part_type
 ```
 
 **Post Types:** Use `cpl_` prefix
 ```php
-cpl_part
+ce_part
 ```
 
 ## Key Architectural Patterns
@@ -212,12 +212,12 @@ cpl_part
 ### Static Classes
 All classes use static methods (no instantiation):
 ```php
-CPL_EuroStocks_Importer::run_import();
-CPL_EuroStocks_API::get_json($url, $opts);
+CE_EuroStocks_Importer::run_import();
+CE_EuroStocks_API::get_json($url, $opts);
 ```
 
 ### Helpers for Parsing
-`CPL_EuroStocks_Helpers` contains pure functions for text processing:
+`CE_EuroStocks_Helpers` contains pure functions for text processing:
 - `clean_text()` - Strip HTML, normalize whitespace
 - `extract_labeled_value()` - Parse "Label: value" from descriptions
 - `split_brands()` - Parse comma/slash-separated brands
@@ -247,7 +247,7 @@ To avoid PHP timeouts, imports run in batches:
 ### Adding a New Parsed Field
 1. Add parsing logic to `includes/helpers.php`
 2. Call parser in `includes/importer.php` → `upsert_part_post()`
-3. Store result with `update_post_meta($post_id, '_cpl_new_field', $value)`
+3. Store result with `update_post_meta($post_id, '_ce_new_field', $value)`
 4. Display in metabox: `includes/admin.php` → `render_metabox()`
 
 ### Adding a New Setting
@@ -257,7 +257,7 @@ To avoid PHP timeouts, imports run in batches:
 4. Use in `includes/importer.php` via `$opts['new_setting']`
 
 ### Debugging API Responses
-- Raw API response stored in post meta: `_cpl_raw_details`
+- Raw API response stored in post meta: `_ce_raw_details`
 - Last response stored globally: `cpl_eurostocks_last_raw` option
 - View in metabox when editing a post (click "Toon alle info (raw JSON)")
 

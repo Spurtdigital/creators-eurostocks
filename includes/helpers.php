@@ -1,7 +1,7 @@
 <?php
 if (!defined('ABSPATH')) { exit; }
 
-class CPL_EuroStocks_Helpers {
+class CE_EuroStocks_Helpers {
 
   public static function clean_text($text) {
     if (!is_string($text)) return '';
@@ -67,7 +67,7 @@ class CPL_EuroStocks_Helpers {
   }
 
   public static function admin_url_with_msg($args = array()) {
-    $base = admin_url('options-general.php?page=cpl-engines-import');
+    $base = admin_url('options-general.php?page=ce-import');
     return add_query_arg($args, $base);
   }
 
@@ -151,10 +151,10 @@ class CPL_EuroStocks_Helpers {
    * @return string Formatted price or empty string
    */
   public static function get_price($post_id = null) {
-    $price = self::get_field('_cpl_price', $post_id);
+    $price = self::get_field('_ce_price', $post_id);
     if (!$price) return '';
     
-    $currency = self::get_field('_cpl_price_currency', $post_id, 'EUR');
+    $currency = self::get_field('_ce_price_currency', $post_id, 'EUR');
     $symbol = ($currency === 'EUR') ? '€' : $currency . ' ';
     
     // Format number
@@ -169,7 +169,7 @@ class CPL_EuroStocks_Helpers {
    * @return array Array of attachment IDs
    */
   public static function get_gallery($post_id = null) {
-    $gallery_json = self::get_field('_cpl_gallery', $post_id);
+    $gallery_json = self::get_field('_ce_gallery', $post_id);
     if (!$gallery_json) return array();
     
     $gallery = json_decode($gallery_json, true);
@@ -186,14 +186,14 @@ class CPL_EuroStocks_Helpers {
     $gallery = self::get_gallery($post_id);
     if (empty($gallery)) return;
     
-    $class = isset($attrs['class']) ? esc_attr($attrs['class']) : 'cpl-gallery';
+    $class = isset($attrs['class']) ? esc_attr($attrs['class']) : 'ce-gallery';
     
     echo '<div class="' . $class . '">';
     foreach ($gallery as $attachment_id) {
       $img = wp_get_attachment_image($attachment_id, $size, false, $attrs);
       if ($img) {
         $url = wp_get_attachment_url($attachment_id);
-        echo '<a href="' . esc_url($url) . '" class="cpl-gallery-item">' . $img . '</a>';
+        echo '<a href="' . esc_url($url) . '" class="ce-gallery-item">' . $img . '</a>';
       }
     }
     echo '</div>';
@@ -205,7 +205,7 @@ class CPL_EuroStocks_Helpers {
    * @return string 'in_stock', 'out_of_stock', or 'unknown'
    */
   public static function get_stock_status($post_id = null) {
-    $stock = self::get_field('_cpl_stock', $post_id);
+    $stock = self::get_field('_ce_stock', $post_id);
     if ($stock === '') return 'unknown';
     
     return ((int)$stock > 0) ? 'in_stock' : 'out_of_stock';
@@ -226,7 +226,7 @@ class CPL_EuroStocks_Helpers {
    * @return string Formatted mileage or empty string
    */
   public static function get_mileage($post_id = null) {
-    $km = self::get_field('_cpl_km_value', $post_id);
+    $km = self::get_field('_ce_km_value', $post_id);
     if (!$km) return '';
     
     return number_format((int)$km, 0, ',', '.') . ' km';
@@ -238,7 +238,7 @@ class CPL_EuroStocks_Helpers {
    * @return string Warranty description or empty string
    */
   public static function get_warranty($post_id = null) {
-    $months = self::get_field('_cpl_warranty_months', $post_id);
+    $months = self::get_field('_ce_warranty_months', $post_id);
     if (!$months) return '';
     
     $months = (int)$months;
@@ -262,44 +262,44 @@ class CPL_EuroStocks_Helpers {
     $specs = array();
     
     // Basic info
-    if ($merk = self::get_field('_cpl_manufacturer', $post_id)) $specs['Merk'] = $merk;
-    if ($year = self::get_field('_cpl_year', $post_id)) $specs['Bouwjaar'] = $year;
-    if ($fuel = self::get_field('_cpl_fuel', $post_id)) $specs['Brandstof'] = $fuel;
+    if ($merk = self::get_field('_ce_manufacturer', $post_id)) $specs['Merk'] = $merk;
+    if ($year = self::get_field('_ce_year', $post_id)) $specs['Bouwjaar'] = $year;
+    if ($fuel = self::get_field('_ce_fuel', $post_id)) $specs['Brandstof'] = $fuel;
     
     // Engine specs
-    if ($capacity = self::get_field('_cpl_engine_capacity', $post_id)) $specs['Motorinhoud'] = $capacity;
-    if ($power_kw = self::get_field('_cpl_power_kw', $post_id)) {
+    if ($capacity = self::get_field('_ce_engine_capacity', $post_id)) $specs['Motorinhoud'] = $capacity;
+    if ($power_kw = self::get_field('_ce_power_kw', $post_id)) {
       $specs['Vermogen'] = $power_kw . ' kW';
-      if ($power_hp = self::get_field('_cpl_power_hp', $post_id)) {
+      if ($power_hp = self::get_field('_ce_power_hp', $post_id)) {
         $specs['Vermogen'] .= ' (' . $power_hp . ' pk)';
       }
     }
     
     // Transmission
-    if ($trans = self::get_field('_cpl_transmission', $post_id)) $specs['Transmissie'] = $trans;
-    if ($gear = self::get_field('_cpl_gear_type', $post_id)) $specs['Versnellingsbak type'] = $gear;
+    if ($trans = self::get_field('_ce_transmission', $post_id)) $specs['Transmissie'] = $trans;
+    if ($gear = self::get_field('_ce_gear_type', $post_id)) $specs['Versnellingsbak type'] = $gear;
     
     // Mileage & warranty
     if ($km = self::get_mileage($post_id)) $specs['Kilometerstand'] = $km;
     if ($warranty = self::get_warranty($post_id)) $specs['Garantie'] = $warranty;
     
     // Part numbers
-    if ($part_nr = self::get_field('_cpl_part_number', $post_id)) $specs['Onderdeelnummer'] = $part_nr;
-    if ($oem = self::get_field('_cpl_oem_number', $post_id)) $specs['OEM nummer'] = $oem;
+    if ($part_nr = self::get_field('_ce_part_number', $post_id)) $specs['Onderdeelnummer'] = $part_nr;
+    if ($oem = self::get_field('_ce_oem_number', $post_id)) $specs['OEM nummer'] = $oem;
     
     // Dimensions & weight
-    if ($weight = self::get_field('_cpl_weight', $post_id)) $specs['Gewicht'] = $weight;
+    if ($weight = self::get_field('_ce_weight', $post_id)) $specs['Gewicht'] = $weight;
     $dims = array();
-    if ($length = self::get_field('_cpl_length', $post_id)) $dims[] = $length;
-    if ($width = self::get_field('_cpl_width', $post_id)) $dims[] = $width;
-    if ($height = self::get_field('_cpl_height', $post_id)) $dims[] = $height;
+    if ($length = self::get_field('_ce_length', $post_id)) $dims[] = $length;
+    if ($width = self::get_field('_ce_width', $post_id)) $dims[] = $width;
+    if ($height = self::get_field('_ce_height', $post_id)) $dims[] = $height;
     if (!empty($dims)) $specs['Afmetingen (LxBxH)'] = implode(' x ', $dims);
     
     // Stock & delivery
-    $stock = self::get_field('_cpl_stock', $post_id);
+    $stock = self::get_field('_ce_stock', $post_id);
     if ($stock !== '') $specs['Voorraad'] = ($stock > 0) ? 'Op voorraad' : 'Niet op voorraad';
-    if ($delivery = self::get_field('_cpl_delivery', $post_id)) $specs['Levering'] = $delivery;
-    if ($condition = self::get_field('_cpl_condition', $post_id)) $specs['Conditie'] = $condition;
+    if ($delivery = self::get_field('_ce_delivery', $post_id)) $specs['Levering'] = $delivery;
+    if ($condition = self::get_field('_ce_condition', $post_id)) $specs['Conditie'] = $condition;
     
     return $specs;
   }
