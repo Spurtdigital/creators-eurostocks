@@ -181,11 +181,11 @@ class CE_EuroStocks_Importer {
     // Debug: Log what we receive from API
     if (defined('WP_DEBUG') && WP_DEBUG) {
       error_log('EUROSTOCKS API Response Keys: ' . implode(', ', array_keys($list)));
-      error_log('EUROSTOCKS API Response - TotalRecords: ' . ($list['TotalRecords'] ?? 'NOT SET') . ', TotalPages: ' . ($list['TotalPages'] ?? 'NOT SET'));
+      error_log('EUROSTOCKS API Response - TotalResults: ' . ($list['TotalResults'] ?? 'NOT SET') . ', TotalPages: ' . ($list['TotalPages'] ?? 'NOT SET'));
     }
     // Update totals from API response (only if they exist)
-    if (isset($list['TotalRecords'])) {
-      $total_records = (int)$list['TotalRecords'];
+    if (isset($list['TotalResults'])) {
+      $total_records = (int)$list['TotalResults'];
     }
     if (isset($list['TotalPages'])) {
       $total_pages = (int)$list['TotalPages'];
