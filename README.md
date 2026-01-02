@@ -3,7 +3,7 @@
 WordPress plugin voor het importeren en synchroniseren van automotoren en versnellingsbakken vanuit de EuroStocks API.
 
 ## Versie
-0.6.0
+0.6.1
 
 ## Vereisten
 - WordPress 5.8+

@@ -1,6 +1,102 @@
 # Changelog - Creators EuroStocks Importer
 
-## Version 0.6.0 - January 2026
+## Version 0.6.1 - January 2026
+
+### 🌐 Taxonomie Generalisatie
+
+**Breaking Change (Backwards Compatible):**
+De plugin ondersteunt nu alle EuroStocks producttypen (niet alleen motoren). Taxonomieën zijn generiek gemaakt voor alle automotive onderdelen.
+
+#### Wijzigingen
+
+1. **CPT Slug Update** ✅
+   - Van: `/automotoren/` → Naar: `/onderdelen/`
+   - Meer generiek voor alle product types
+
+2. **Taxonomy Labels Update** ✅
+   - "Motorcodes" → "Productcodes" (volledige naam)
+   - Menu naam: "Codes" (korter)
+   - Werkt nu voor motor codes, turbo codes, transmissie codes, etc.
+
+3. **Rewrite Slugs Update** ✅
+   - Van: `/motorcode/` → Naar: `/code/`
+   - Consistent met andere taxonomieën
+
+4. **Admin Notice** ✅
+   - Automatische melding na update om permalinks te flushen
+   - Dismissible met AJAX handler
+   - Waarschuwt gebruikers voor URL structuur wijziging
+
+#### Backwards Compatibility
+
+- Database taxonomy naam blijft `ce_engine_code` (geen breaking change)
+- Bestaande term assignments blijven werken
+- Geen database migratie nodig
+- Only rewrite slugs veranderen (vereist permalink flush)
+
+#### Gebruiker Actie Vereist
+
+**NA UPDATE:**
+1. Ga naar **Instellingen → Permalinks**
+2. Klik op **"Wijzigingen opslaan"**
+3. Permalinks zijn nu bijgewerkt
+
+**Let op:** Externe links naar oude URL structuur (`/automotoren/`, `/motorcode/`) werken mogelijk niet meer. Overweeg redirects toe te voegen als dit een probleem is.
+
+#### Gewijzigde Bestanden
+
+- `cpl-engines-eurostocks-importer.php` - AJAX hooks voor admin notice
+- `includes/importer.php` - Taxonomy registraties (labels + slugs)
+- `includes/admin.php` - Admin notice voor permalink flush
+
+#### Technische Details
+
+**Taxonomy Registratie Updates:**
+```php
+// CPT
+register_post_type('ce_part', [
+    'rewrite' => ['slug' => 'onderdelen'], // Was: automotoren
+]);
+
+// Engine/Product Codes
+register_taxonomy('ce_engine_code', 'ce_part', [
+    'labels' => [
+        'name' => 'Productcodes',      // Was: Motorcodes
+        'menu_name' => 'Codes',         // NEW (korter in menu)
+    ],
+    'rewrite' => ['slug' => 'code'],   // Was: motorcode
+]);
+```
+
+**Admin Notice Logic:**
+- Toont één keer na update
+- Opgeslagen in option: `ce_eurostocks_taxonomy_notice_dismissed`
+- AJAX dismiss functie: `ce_eurostocks_dismiss_taxonomy_notice`
+
+### 🔄 Compatibiliteit met 0.6.0
+
+Alle features van versie 0.6.0 blijven intact:
+- ✅ Logging voor Cron Runs
+- ✅ Test Location ID Button
+- ✅ Progress Indicator
+- ✅ Dashboard Widget
+- ✅ Retry Logic voor Afbeeldingen
+- ✅ API Rate Limiting
+- ✅ Bulk Acties
+- ✅ Filter op Voorraad Status
+- ✅ Verbeterde Missing Posts Detection
+
+### 🧪 Testing
+
+- [x] PHP Syntax validatie
+- [ ] Admin notice wordt getoond
+- [ ] Permalink flush werkt correct
+- [ ] URLs veranderen naar nieuwe structuur
+- [ ] Taxonomie labels tonen correct
+- [ ] Bestaande terms blijven geassigneerd
+- [ ] Import blijft werken met nieuwe slugs
+
+
 
 ### ✨ Nieuwe Features
 

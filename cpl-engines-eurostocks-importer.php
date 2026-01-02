@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Creators EuroStocks Importer
  * Description: Import/sync automotoren en/of versnellingsbakken vanuit EuroStocks (Data API + Product Data API) naar een CPT met taxonomieën.
- * Version: 0.6.0
+ * Version: 0.6.1
  * Author: Creators
  * Text Domain: creators-eurostocks
  * Domain Path: /languages
@@ -12,7 +12,7 @@
 
 if (!defined('ABSPATH')) { exit; }
 
-define('CE_EUROSTOCKS_VERSION', '0.6.0');
+define('CE_EUROSTOCKS_VERSION', '0.6.1');
 define('CE_EUROSTOCKS_PLUGIN_FILE', __FILE__);
 define('CE_EUROSTOCKS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CE_EUROSTOCKS_PLUGIN_URL', plugin_dir_url(__FILE__));
