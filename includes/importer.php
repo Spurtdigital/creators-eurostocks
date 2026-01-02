@@ -174,6 +174,7 @@ class CE_EuroStocks_Importer {
 
     $list = CE_EuroStocks_API::post_json($searchUrl, $opts, $payload);
     if (is_wp_error($list)) {
+      self::log('Search API error on page ' . $page . ': ' . $list->get_error_message(), 'error');
       return array('upserts' => $upserts, 'skipped' => $skipped, 'errors' => ++$errors, 'error' => $list->get_error_message());
     }
 
@@ -238,8 +239,13 @@ class CE_EuroStocks_Importer {
 
   delete_option('ce_eurostocks_import_state');
 
-    if (!empty($opts['mark_missing_out_of_stock'])) {
-      self::mark_missing_out_of_stock($run_id);
+    // Only mark missing products if import completed successfully without errors
+    if (!empty($opts['mark_missing_out_of_stock']) && $errors === 0) {
+      self::log('Marking missing products as out of stock');
+      $marked = self::mark_missing_out_of_stock($run_id);
+      self::log('Marked ' . $marked . ' products as out of stock');
+    } elseif (!empty($opts['mark_missing_out_of_stock']) && $errors > 0) {
+      self::log('Skipping mark_missing_out_of_stock due to import errors (' . $errors . ' errors)', 'warning');
     }
     
     // Get final statistics
@@ -247,6 +253,8 @@ class CE_EuroStocks_Importer {
     $db_total = ($db_count->publish ?? 0) + ($db_count->draft ?? 0) + ($db_count->pending ?? 0) + ($db_count->private ?? 0);
     
     // $total_records and $total_pages are already set from the loop
+    
+    self::log('Import completed. Upserts: ' . $upserts . ', Skipped: ' . $skipped . ', Errors: ' . $errors . ', Total in DB: ' . $db_total);
     
     return array(
       'upserts' => $upserts, 
@@ -481,59 +489,79 @@ class CE_EuroStocks_Importer {
       $url = trim((string)$url);
       if ($url === '') continue;
 
-      // Some CDNs return 403 unless you send a browser-like User-Agent / Referer.
-      $response = wp_remote_get($url, array(
-        'timeout' => 30,
-        'redirection' => 5,
-        'headers' => array(
-          'User-Agent' => 'Mozilla/5.0 (compatible; WordPress; CPL EuroStocks Importer)',
-          'Referer' => home_url('/'),
-          'Accept' => 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
-        ),
-      ));
+      $max_retries = 3;
+      $attachment_id = false;
+      
+      for ($attempt = 1; $attempt <= $max_retries; $attempt++) {
+        // Some CDNs return 403 unless you send a browser-like User-Agent / Referer.
+        $response = wp_remote_get($url, array(
+          'timeout' => 30,
+          'redirection' => 5,
+          'headers' => array(
+            'User-Agent' => 'Mozilla/5.0 (compatible; WordPress; CPL EuroStocks Importer)',
+            'Referer' => home_url('/'),
+            'Accept' => 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+          ),
+        ));
 
-      if (is_wp_error($response)) {
-        $errors[] = array('url' => $url, 'error' => $response->get_error_message());
-        continue;
+        if (is_wp_error($response)) {
+          if ($attempt < $max_retries) {
+            usleep(500000 * $attempt); // Exponential backoff: 500ms, 1s, 1.5s
+            continue;
+          }
+          $errors[] = array('url' => $url, 'error' => $response->get_error_message());
+          break;
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
+        
+        if ($code < 200 || $code >= 300 || empty($body)) {
+          if ($attempt < $max_retries && $code >= 500) {
+            usleep(500000 * $attempt);
+            continue;
+          }
+          $errors[] = array('url' => $url, 'error' => ($code ? ('HTTP ' . $code) : 'Empty response'));
+          break;
+        }
+
+        // Success - process image
+        $tmp = wp_tempnam($url);
+        if (!$tmp) {
+          $errors[] = array('url' => $url, 'error' => 'Could not create temp file');
+          break;
+        }
+
+        $written = file_put_contents($tmp, $body);
+        if ($written === false || $written === 0) {
+          @unlink($tmp);
+          $errors[] = array('url' => $url, 'error' => 'Could not write temp file');
+          break;
+        }
+
+        $name = basename(parse_url($url, PHP_URL_PATH));
+        if (!$name) $name = 'image-' . time() . '.jpg';
+
+        $file_array = array(
+          'name' => sanitize_file_name($name),
+          'tmp_name' => $tmp,
+        );
+
+        $attachment_id = media_handle_sideload($file_array, $post_id);
+        if (is_wp_error($attachment_id)) {
+          @unlink($tmp);
+          $errors[] = array('url' => $url, 'error' => $attachment_id->get_error_message());
+          $attachment_id = false;
+          break;
+        }
+
+        // Success!
+        break;
       }
 
-      $code = (int) wp_remote_retrieve_response_code($response);
-      $body = wp_remote_retrieve_body($response);
-      if ($code < 200 || $code >= 300 || empty($body)) {
-        $errors[] = array('url' => $url, 'error' => ($code ? ('HTTP ' . $code) : 'Empty response'));
-        continue;
+      if ($attachment_id) {
+        $gallery_ids[] = (int)$attachment_id;
       }
-
-      // Write to temp file
-      $tmp = wp_tempnam($url);
-      if (!$tmp) {
-        $errors[] = array('url' => $url, 'error' => 'Could not create temp file');
-        continue;
-      }
-
-      $written = file_put_contents($tmp, $body);
-      if ($written === false || $written === 0) {
-        @unlink($tmp);
-        $errors[] = array('url' => $url, 'error' => 'Could not write temp file');
-        continue;
-      }
-
-      $name = basename(parse_url($url, PHP_URL_PATH));
-      if (!$name) $name = 'image-' . time() . '.jpg';
-
-      $file_array = array(
-        'name' => sanitize_file_name($name),
-        'tmp_name' => $tmp,
-      );
-
-      $attachment_id = media_handle_sideload($file_array, $post_id);
-      if (is_wp_error($attachment_id)) {
-        @unlink($tmp);
-        $errors[] = array('url' => $url, 'error' => $attachment_id->get_error_message());
-        continue;
-      }
-
-      $gallery_ids[] = (int)$attachment_id;
     }
 
     if (!empty($gallery_ids)) {

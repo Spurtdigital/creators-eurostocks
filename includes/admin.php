@@ -75,6 +75,7 @@ class CE_EuroStocks_Admin {
         'sort_order' => 'desc',
         'search_text' => '',
         'download_images' => 1,
+        'api_rate_limit' => 1,
         'mark_missing_out_of_stock' => 0,
         'confirm_delete_missing' => 0,
         'max_runtime' => 20,
@@ -87,6 +88,7 @@ class CE_EuroStocks_Admin {
 
     $out['enabled'] = !empty($input['enabled']) ? 1 : 0;
     $out['download_images'] = !empty($input['download_images']) ? 1 : 0;
+    $out['api_rate_limit'] = !empty($input['api_rate_limit']) ? 1 : 0;
     $out['username'] = isset($input['username']) ? sanitize_text_field($input['username']) : '';
     $out['password'] = isset($input['password']) ? sanitize_text_field($input['password']) : '';
     $out['api_key'] = isset($input['api_key']) ? sanitize_text_field($input['api_key']) : '';
@@ -189,6 +191,16 @@ class CE_EuroStocks_Admin {
               <label>
                 <input type="checkbox" name="<?php echo esc_attr(CE_EuroStocks_Importer::OPT_KEY); ?>[download_images]" value="1" <?php checked(!empty($opts['download_images'])); ?> />
                 Download afbeeldingen en zet de eerste als uitgelichte afbeelding
+              </label>
+            </td>
+          </tr>
+
+          <tr>
+            <th scope="row">API Rate Limiting</th>
+            <td>
+              <label>
+                <input type="checkbox" name="<?php echo esc_attr(CE_EuroStocks_Importer::OPT_KEY); ?>[api_rate_limit]" value="1" <?php checked(!empty($opts['api_rate_limit'])); ?> />
+                Voeg 100ms pauze toe tussen API calls (aanbevolen voor grote imports om blokkering te voorkomen)
               </label>
             </td>
           </tr>
@@ -335,6 +347,12 @@ class CE_EuroStocks_Admin {
         <?php wp_nonce_field('ce_eurostocks_test_languages'); ?>
         <input type="hidden" name="action" value="ce_eurostocks_test_languages">
         <?php submit_button('Test Data API (languages)', 'secondary', 'submit', false); ?>
+      </form>
+
+      <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline-block; margin-right: 12px;">
+        <?php wp_nonce_field('ce_eurostocks_test_location'); ?>
+        <input type="hidden" name="action" value="ce_eurostocks_test_location">
+        <?php submit_button('Test Location ID', 'secondary', 'submit', false); ?>
       </form>
 
       <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" id="ce-import-form" style="display:inline-block; margin-right: 12px;">
