@@ -137,6 +137,13 @@ class CE_EuroStocks_Admin {
           </tr>
 
           <tr><th colspan="2"><h2>Authenticatie</h2></th></tr>
+          <tr>
+            <td colspan="2">
+              <div class="notice notice-info inline" style="margin: 10px 0; padding: 10px;">
+                <p><strong>Hoe kom ik aan API gegevens?</strong> Neem contact op met <a href="https://www.eurostocks.com" target="_blank">EuroStocks</a> voor toegang tot de API. Zie ook de setup handleiding (SETUP-GUIDE.md) in de plugin folder.</p>
+              </div>
+            </td>
+          </tr>
 
           <tr>
             <th scope="row"><label>Username</label></th>
@@ -155,20 +162,23 @@ class CE_EuroStocks_Admin {
 
           <tr>
             <th scope="row"><label>Data API Base URL</label></th>
-            <td><input type="url" class="regular-text" name="<?php echo esc_attr(CE_EuroStocks_Importer::OPT_KEY); ?>[data_api_base]" value="<?php echo esc_attr($opts['data_api_base'] ?? 'https://data-api.eurostocks.com'); ?>" /></td>
+            <td><input type="url" class="regular-text" name="<?php echo esc_attr(CE_EuroStocks_Importer::OPT_KEY); ?>[data_api_base]" value="<?php echo esc_attr($opts['data_api_base'] ?? 'https://data-api.eurostocks.com'); ?>" />
+            <p class="description">Voor het ophalen van de productlijst. Meestal: <code>https://data-api.eurostocks.com</code></p></td>
           </tr>
           <tr>
             <th scope="row"><label>Product Data API Base URL</label></th>
-            <td><input type="url" class="regular-text" name="<?php echo esc_attr(CE_EuroStocks_Importer::OPT_KEY); ?>[product_data_api_base]" value="<?php echo esc_attr($opts['product_data_api_base'] ?? 'https://products-data-api.eurostocks.com'); ?>" /></td>
+            <td><input type="url" class="regular-text" name="<?php echo esc_attr(CE_EuroStocks_Importer::OPT_KEY); ?>[product_data_api_base]" value="<?php echo esc_attr($opts['product_data_api_base'] ?? 'https://products-data-api.eurostocks.com'); ?>" />
+            <p class="description">Voor het ophalen van gedetailleerde productinformatie. Meestal: <code>https://products-data-api.eurostocks.com</code></p></td>
           </tr>
           <tr>
             <th scope="row"><label>Location ID</label></th>
             <td><input type="number" class="small-text" name="<?php echo esc_attr(CE_EuroStocks_Importer::OPT_KEY); ?>[location_id]" value="<?php echo esc_attr($opts['location_id'] ?? 0); ?>" />
-            <p class="description">Bijvoorbeeld 915</p></td>
+            <p class="description">Je locatie-ID van EuroStocks (bijv. 915). Vraag dit op bij je EuroStocks contactpersoon.</p></td>
           </tr>
           <tr>
             <th scope="row"><label>Taal (ISO)</label></th>
-            <td><input type="text" class="small-text" name="<?php echo esc_attr(CE_EuroStocks_Importer::OPT_KEY); ?>[language_iso]" value="<?php echo esc_attr($opts['language_iso'] ?? 'nl'); ?>" /></td>
+            <td><input type="text" class="small-text" name="<?php echo esc_attr(CE_EuroStocks_Importer::OPT_KEY); ?>[language_iso]" value="<?php echo esc_attr($opts['language_iso'] ?? 'nl'); ?>" />
+            <p class="description">Taal van de DATA uit EuroStocks API (bijv. "nl", "en", "de"). Dit is NIET hetzelfde als WPML talen. Zie SETUP-GUIDE.md voor meer info.</p></td>
           </tr>
 
           <tr><th colspan="2"><h2>Import</h2></th></tr>
