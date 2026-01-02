@@ -180,6 +180,7 @@ class CE_EuroStocks_Importer {
     // Track API statistics
     // Debug: Log what we receive from API
     if (defined('WP_DEBUG') && WP_DEBUG) {
+      error_log('EUROSTOCKS API Response Keys: ' . implode(', ', array_keys($list)));
       error_log('EUROSTOCKS API Response - TotalRecords: ' . ($list['TotalRecords'] ?? 'NOT SET') . ', TotalPages: ' . ($list['TotalPages'] ?? 'NOT SET'));
     }
     // Update totals from API response (only if they exist)
