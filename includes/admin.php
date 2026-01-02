@@ -223,10 +223,26 @@ class CE_EuroStocks_Admin {
             <th scope="row"><label>Wat wil je importeren?</label></th>
             <td>
               <select name="<?php echo esc_attr(CE_EuroStocks_Importer::OPT_KEY); ?>[import_mode]">
-                <option value="engines" <?php selected(($opts['import_mode'] ?? 'engines'), 'engines'); ?>>Alleen automotoren</option>
-                <option value="gearboxes" <?php selected(($opts['import_mode'] ?? 'engines'), 'gearboxes'); ?>>Alleen versnellingsbakken</option>
-                <option value="both" <?php selected(($opts['import_mode'] ?? 'engines'), 'both'); ?>>Automotoren + versnellingsbakken</option>
+                <optgroup label="Specifieke onderdelen">
+                  <option value="engines" <?php selected(($opts['import_mode'] ?? 'engines'), 'engines'); ?>>Alleen automotoren</option>
+                  <option value="gearboxes" <?php selected(($opts['import_mode'] ?? 'engines'), 'gearboxes'); ?>>Alleen versnellingsbakken</option>
+                  <option value="turbos" <?php selected(($opts['import_mode'] ?? 'engines'), 'turbos'); ?>>Alleen turbo's</option>
+                  <option value="catalysts" <?php selected(($opts['import_mode'] ?? 'engines'), 'catalysts'); ?>>Alleen katalysatoren</option>
+                  <option value="starters" <?php selected(($opts['import_mode'] ?? 'engines'), 'starters'); ?>>Alleen startmotoren</option>
+                  <option value="alternators" <?php selected(($opts['import_mode'] ?? 'engines'), 'alternators'); ?>>Alleen dynamo's</option>
+                  <option value="ac_compressors" <?php selected(($opts['import_mode'] ?? 'engines'), 'ac_compressors'); ?>>Alleen airco compressors</option>
+                  <option value="power_steering" <?php selected(($opts['import_mode'] ?? 'engines'), 'power_steering'); ?>>Alleen stuurbekrachtiging pompen</option>
+                </optgroup>
+                <optgroup label="Combinaties">
+                  <option value="engines_gearboxes" <?php selected(($opts['import_mode'] ?? 'engines'), 'engines_gearboxes'); ?>>Motoren + Versnellingsbakken</option>
+                  <option value="engine_parts" <?php selected(($opts['import_mode'] ?? 'engines'), 'engine_parts'); ?>>Alle motoronderdelen (motoren, turbo's, starters, etc.)</option>
+                  <option value="transmission_parts" <?php selected(($opts['import_mode'] ?? 'engines'), 'transmission_parts'); ?>>Alle transmissie onderdelen</option>
+                </optgroup>
+                <optgroup label="Alles">
+                  <option value="all" <?php selected(($opts['import_mode'] ?? 'engines'), 'all'); ?>>✨ Alles importeren (alle categorieën)</option>
+                </optgroup>
               </select>
+              <p class="description">Kies welke EuroStocks producten je wilt importeren. Bij "Alles importeren" worden alle onderdelen gesynchroniseerd.</p>
             </td>
           </tr>
 

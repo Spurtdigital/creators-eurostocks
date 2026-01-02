@@ -268,15 +268,43 @@ class CE_EuroStocks_Importer {
   }
 
   private static function matches_import_mode($details, $mode) {
+    // Import all products when mode is 'all'
+    if ($mode === 'all') return true;
+    
     $sub = strtoupper((string)($details['subCategory'] ?? ''));
     $type = strtoupper((string)($details['productType'] ?? ''));
-
-    $is_engine = ($sub === 'MOTOR_AND_ACCESSORIES') || (stripos($type, 'ENGINE_') !== false);
-    $is_gearbox = (stripos($type, 'GEAR_BOX') !== false) || ($sub === 'TRANSMISSION_DRIVE_AND_ACCESSORIES');
-
+    $title = strtoupper((string)($details['productInfo'][0]['PRODUCT_TITLE'] ?? ''));
+    
+    // Detect product types
+    $is_engine = ($sub === 'MOTOR_AND_ACCESSORIES') || (stripos($type, 'ENGINE_') !== false) || (stripos($type, 'MOTOR') !== false);
+    $is_gearbox = (stripos($type, 'GEAR_BOX') !== false) || ($sub === 'TRANSMISSION_DRIVE_AND_ACCESSORIES') || (stripos($title, 'VERSNELLINGSBAK') !== false);
+    $is_turbo = (stripos($type, 'TURBO') !== false) || (stripos($title, 'TURBO') !== false);
+    $is_catalyst = (stripos($type, 'CATALYST') !== false) || (stripos($type, 'KATALYSATOR') !== false) || (stripos($title, 'KATALYSATOR') !== false);
+    $is_starter = (stripos($type, 'STARTER') !== false) || (stripos($title, 'STARTMOTOR') !== false);
+    $is_alternator = (stripos($type, 'ALTERNATOR') !== false) || (stripos($type, 'DYNAMO') !== false) || (stripos($title, 'DYNAMO') !== false);
+    $is_ac_compressor = (stripos($type, 'AIRCO') !== false) || (stripos($type, 'AC_COMPRESSOR') !== false) || (stripos($title, 'AIRCO') !== false);
+    $is_power_steering = (stripos($type, 'POWER_STEERING') !== false) || (stripos($type, 'STUURBEKRACHTIGING') !== false) || (stripos($title, 'STUURBEKRACHTIGING') !== false);
+    
+    // Single category modes
     if ($mode === 'engines') return $is_engine;
     if ($mode === 'gearboxes') return $is_gearbox;
-    return ($is_engine || $is_gearbox);
+    if ($mode === 'turbos') return $is_turbo;
+    if ($mode === 'catalysts') return $is_catalyst;
+    if ($mode === 'starters') return $is_starter;
+    if ($mode === 'alternators') return $is_alternator;
+    if ($mode === 'ac_compressors') return $is_ac_compressor;
+    if ($mode === 'power_steering') return $is_power_steering;
+    
+    // Combination modes
+    if ($mode === 'engines_gearboxes') return ($is_engine || $is_gearbox);
+    if ($mode === 'engine_parts') return ($is_engine || $is_turbo || $is_starter || $is_alternator);
+    if ($mode === 'transmission_parts') return ($is_gearbox);
+    
+    // Backward compatibility: 'both' = engines + gearboxes
+    if ($mode === 'both') return ($is_engine || $is_gearbox);
+    
+    // Default: only engines (backward compatible)
+    return $is_engine;
   }
 
   private static function upsert_part_post($details, $opts, $run_id) {
