@@ -4,6 +4,8 @@
  * Description: Import/sync automotoren en/of versnellingsbakken vanuit EuroStocks (Data API + Product Data API) naar een CPT met taxonomieën.
  * Version: 0.5.0
  * Author: Creators
+ * Text Domain: creators-eurostocks
+ * Domain Path: /languages
  * Requires at least: 5.8
  * Requires PHP: 7.4
  */
@@ -14,6 +16,12 @@ define('CE_EUROSTOCKS_VERSION', '0.5.0');
 define('CE_EUROSTOCKS_PLUGIN_FILE', __FILE__);
 define('CE_EUROSTOCKS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CE_EUROSTOCKS_PLUGIN_URL', plugin_dir_url(__FILE__));
+
+// Load text domain for translations
+add_action('plugins_loaded', 'ce_eurostocks_load_textdomain');
+function ce_eurostocks_load_textdomain() {
+  load_plugin_textdomain('creators-eurostocks', false, dirname(plugin_basename(__FILE__)) . '/languages');
+}
 
 require_once CE_EUROSTOCKS_PLUGIN_DIR . 'includes/helpers.php';
 require_once CE_EUROSTOCKS_PLUGIN_DIR . 'includes/api.php';

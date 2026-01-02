@@ -1,0 +1,102 @@
+# Copyright (C) 2026 Creators
+# This file is distributed under the same license as the Creators EuroStocks Importer plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Creators EuroStocks Importer 0.5.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/creators-eurostocks\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-01-02T17:50:01+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: creators-eurostocks\n"
+
+#. Plugin Name of the plugin
+#: cpl-engines-eurostocks-importer.php
+msgid "Creators EuroStocks Importer"
+msgstr ""
+
+#. Description of the plugin
+#: cpl-engines-eurostocks-importer.php
+msgid "Import/sync automotoren en/of versnellingsbakken vanuit EuroStocks (Data API + Product Data API) naar een CPT met taxonomieën."
+msgstr ""
+
+#. Author of the plugin
+#: cpl-engines-eurostocks-importer.php
+msgid "Creators"
+msgstr ""
+
+#: includes/admin.php:11
+msgid "EuroStocks Info"
+msgstr ""
+
+#: includes/admin.php:12
+msgid "Specificaties"
+msgstr ""
+
+#: includes/admin.php:13
+msgid "Prijs & Voorraad"
+msgstr ""
+
+#: includes/admin.php:14
+msgid "Afbeeldingen"
+msgstr ""
+
+#: includes/admin.php:15
+msgid "Debug & Diagnostics"
+msgstr ""
+
+#: includes/importer.php:39
+msgid "Onderdelen"
+msgstr ""
+
+#: includes/importer.php:40
+msgid "Onderdeel"
+msgstr ""
+
+#: includes/importer.php:51
+msgid "Merken"
+msgstr ""
+
+#: includes/importer.php:51
+msgid "Merk"
+msgstr ""
+
+#: includes/importer.php:59
+msgid "Modellen"
+msgstr ""
+
+#: includes/importer.php:59
+msgid "Model"
+msgstr ""
+
+#: includes/importer.php:67
+msgid "Motorcodes"
+msgstr ""
+
+#: includes/importer.php:67
+msgid "Motorcode"
+msgstr ""
+
+#: includes/importer.php:75
+msgid "Type onderdeel"
+msgstr ""
+
+#: includes/importer.php:90
+msgid "API instellingen ontbreken (username/password/api key)."
+msgstr ""
+
+#: includes/importer.php:95
+msgid "Location ID ontbreekt."
+msgstr ""
+
+#: includes/importer.php:227
+msgid "Automotor"
+msgstr ""
+
+#: includes/importer.php:227
+msgid "Versnellingsbak"
+msgstr ""

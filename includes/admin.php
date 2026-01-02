@@ -8,11 +8,11 @@ class CE_EuroStocks_Admin {
   }
 
   public static function register_metabox() {
-    add_meta_box('ce_eurostocks_info', 'EuroStocks Info', array(__CLASS__, 'render_info_metabox'), CE_EuroStocks_Importer::CPT, 'normal', 'high');
-    add_meta_box('ce_eurostocks_specs', 'Specificaties', array(__CLASS__, 'render_specs_metabox'), CE_EuroStocks_Importer::CPT, 'normal', 'high');
-    add_meta_box('ce_eurostocks_price', 'Prijs & Voorraad', array(__CLASS__, 'render_price_metabox'), CE_EuroStocks_Importer::CPT, 'side', 'high');
-    add_meta_box('ce_eurostocks_gallery', 'Afbeeldingen', array(__CLASS__, 'render_gallery_metabox'), CE_EuroStocks_Importer::CPT, 'side', 'default');
-    add_meta_box('ce_eurostocks_debug', 'Debug & Diagnostics', array(__CLASS__, 'render_metabox'), CE_EuroStocks_Importer::CPT, 'normal', 'low');
+    add_meta_box('ce_eurostocks_info', __('EuroStocks Info', 'creators-eurostocks'), array(__CLASS__, 'render_info_metabox'), CE_EuroStocks_Importer::CPT, 'normal', 'high');
+    add_meta_box('ce_eurostocks_specs', __('Specificaties', 'creators-eurostocks'), array(__CLASS__, 'render_specs_metabox'), CE_EuroStocks_Importer::CPT, 'normal', 'high');
+    add_meta_box('ce_eurostocks_price', __('Prijs & Voorraad', 'creators-eurostocks'), array(__CLASS__, 'render_price_metabox'), CE_EuroStocks_Importer::CPT, 'side', 'high');
+    add_meta_box('ce_eurostocks_gallery', __('Afbeeldingen', 'creators-eurostocks'), array(__CLASS__, 'render_gallery_metabox'), CE_EuroStocks_Importer::CPT, 'side', 'default');
+    add_meta_box('ce_eurostocks_debug', __('Debug & Diagnostics', 'creators-eurostocks'), array(__CLASS__, 'render_metabox'), CE_EuroStocks_Importer::CPT, 'normal', 'low');
   }
 
   public static function render_metabox($post) {

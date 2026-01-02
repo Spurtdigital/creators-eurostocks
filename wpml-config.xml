@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wpml-config>
+  <custom-types>
+    <custom-type translate="1">ce_part</custom-type>
+  </custom-types>
+  
+  <taxonomies>
+    <taxonomy translate="1">ce_make</taxonomy>
+    <taxonomy translate="1">ce_model</taxonomy>
+    <taxonomy translate="1">ce_engine_code</taxonomy>
+    <taxonomy translate="1">ce_part_type</taxonomy>
+  </taxonomies>
+  
+  <custom-fields>
+    <!-- Translate these fields (user-facing text) -->
+    <custom-field action="translate">_ce_fuel</custom-field>
+    <custom-field action="translate">_ce_condition</custom-field>
+    <custom-field action="translate">_ce_delivery</custom-field>
+    <custom-field action="translate">_ce_fuel_type</custom-field>
+    <custom-field action="translate">_ce_transmission</custom-field>
+    <custom-field action="translate">_ce_gear_type</custom-field>
+    <custom-field action="translate">_ce_color</custom-field>
+    
+    <!-- Copy these fields (same in all languages - numbers, IDs, technical data) -->
+    <custom-field action="copy">_ce_eurostocks_ad_id</custom-field>
+    <custom-field action="copy">_ce_price</custom-field>
+    <custom-field action="copy">_ce_price_currency</custom-field>
+    <custom-field action="copy">_ce_price_vat_percentage</custom-field>
+    <custom-field action="copy">_ce_price_incl_vat</custom-field>
+    <custom-field action="copy">_ce_price_ex_vat</custom-field>
+    <custom-field action="copy">_ce_stock</custom-field>
+    <custom-field action="copy">_ce_km_value</custom-field>
+    <custom-field action="copy">_ce_km_raw</custom-field>
+    <custom-field action="copy">_ce_warranty_months</custom-field>
+    <custom-field action="copy">_ce_warranty_raw</custom-field>
+    <custom-field action="copy">_ce_power_kw</custom-field>
+    <custom-field action="copy">_ce_power_hp</custom-field>
+    <custom-field action="copy">_ce_engine_capacity</custom-field>
+    <custom-field action="copy">_ce_year</custom-field>
+    <custom-field action="copy">_ce_weight</custom-field>
+    <custom-field action="copy">_ce_height</custom-field>
+    <custom-field action="copy">_ce_width</custom-field>
+    <custom-field action="copy">_ce_length</custom-field>
+    <custom-field action="copy">_ce_ean</custom-field>
+    <custom-field action="copy">_ce_sku</custom-field>
+    <custom-field action="copy">_ce_part_number</custom-field>
+    <custom-field action="copy">_ce_oem_number</custom-field>
+    <custom-field action="copy">_ce_manufacturer</custom-field>
+    <custom-field action="copy">_ce_subcategory</custom-field>
+    <custom-field action="copy">_ce_product_type</custom-field>
+    <custom-field action="copy">_ce_location</custom-field>
+    <custom-field action="copy">_ce_supplier_name</custom-field>
+    <custom-field action="copy">_ce_supplier_id</custom-field>
+    <custom-field action="copy">_ce_created_date</custom-field>
+    <custom-field action="copy">_ce_last_updated_date</custom-field>
+    <custom-field action="copy">_ce_gallery</custom-field>
+    <custom-field action="copy">_ce_images</custom-field>
+    <custom-field action="copy">_ce_image_refs</custom-field>
+    
+    <!-- Ignore these fields (internal/debug data) -->
+    <custom-field action="ignore">_ce_raw_details</custom-field>
+    <custom-field action="ignore">_ce_last_seen</custom-field>
+    <custom-field action="ignore">_ce_image_errors</custom-field>
+  </custom-fields>
+</wpml-config>
