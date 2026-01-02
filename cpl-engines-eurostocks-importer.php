@@ -48,6 +48,10 @@ add_action('admin_post_ce_eurostocks_export_csv', array('CE_EuroStocks_Admin', '
 
 add_action(CE_EuroStocks_Importer::CRON_HOOK, array('CE_EuroStocks_Importer', 'run_import'));
 
+// Taxonomy update notice
+add_action('admin_notices', array('CE_EuroStocks_Admin', 'taxonomy_update_notice'));
+add_action('wp_ajax_ce_dismiss_taxonomy_notice', array('CE_EuroStocks_Admin', 'ajax_dismiss_taxonomy_notice'));
+
 // Bulk actions for post list
 add_filter('bulk_actions-edit-ce_part', array('CE_EuroStocks_Admin', 'register_bulk_actions'));
 add_filter('handle_bulk_actions-edit-ce_part', array('CE_EuroStocks_Admin', 'handle_bulk_actions'), 10, 3);

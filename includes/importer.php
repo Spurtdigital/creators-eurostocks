@@ -43,7 +43,7 @@ class CE_EuroStocks_Importer {
       'has_archive' => true,
       'menu_icon' => 'dashicons-car',
       'supports' => array('title', 'editor', 'thumbnail', 'excerpt'),
-      'rewrite' => array('slug' => 'automotoren'),
+      'rewrite' => array('slug' => 'onderdelen'),
       'show_in_rest' => true,
     ));
 
@@ -51,7 +51,7 @@ class CE_EuroStocks_Importer {
       'labels' => array('name' => __('Merken', 'creators-eurostocks'), 'singular_name' => __('Merk', 'creators-eurostocks')),
       'public' => true,
       'hierarchical' => false,
-      'rewrite' => array('slug' => 'automotoren'),
+      'rewrite' => array('slug' => 'merk'),
       'show_in_rest' => true,
     ));
 
@@ -64,10 +64,14 @@ class CE_EuroStocks_Importer {
     ));
 
     register_taxonomy('ce_engine_code', self::CPT, array(
-      'labels' => array('name' => __('Motorcodes', 'creators-eurostocks'), 'singular_name' => __('Motorcode', 'creators-eurostocks')),
+      'labels' => array(
+        'name' => __('Productcodes', 'creators-eurostocks'), 
+        'singular_name' => __('Productcode', 'creators-eurostocks'),
+        'menu_name' => __('Codes', 'creators-eurostocks'),
+      ),
       'public' => true,
       'hierarchical' => false,
-      'rewrite' => array('slug' => 'motorcode'),
+      'rewrite' => array('slug' => 'code'),
       'show_in_rest' => true,
     ));
 
