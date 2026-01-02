@@ -9,6 +9,15 @@ class CE_EuroStocks_Importer {
   const META_EXT_ID = '_ce_eurostocks_ad_id';
   const CRON_HOOK = 'ce_eurostocks_cron_sync';
 
+  /**
+   * Log message (for cron runs and debugging)
+   */
+  private static function log($message, $level = 'info') {
+    if (wp_doing_cron() || (defined('WP_DEBUG') && WP_DEBUG)) {
+      error_log('[CE_EuroStocks ' . strtoupper($level) . '] ' . $message);
+    }
+  }
+
   public static function activate() {
     self::register_cpt_and_taxonomies();
     flush_rewrite_rules();
@@ -72,15 +81,23 @@ class CE_EuroStocks_Importer {
   }
 
   public static function run_import() {
+    $is_cron = wp_doing_cron();
+    if ($is_cron) self::log('Starting scheduled import via WP-Cron');
+    
     $opts = get_option(self::OPT_KEY, array());
 
     if (empty($opts['username']) || empty($opts['password']) || empty($opts['api_key'])) {
-      return array('upserts' => 0, 'skipped' => 0, 'errors' => 1, 'error' => 'API instellingen ontbreken (username/password/api key).');
+      $err = 'API instellingen ontbreken (username/password/api key).';
+      self::log($err, 'error');
+      return array('upserts' => 0, 'skipped' => 0, 'errors' => 1, 'error' => $err);
     }
     if (empty($opts['location_id'])) {
-      return array('upserts' => 0, 'skipped' => 0, 'errors' => 1, 'error' => 'Location ID ontbreekt.');
+      $err = 'Location ID ontbreekt.';
+      self::log($err, 'error');
+      return array('upserts' => 0, 'skipped' => 0, 'errors' => 1, 'error' => $err);
     }
-    if (wp_doing_cron() && empty($opts['enabled'])) {
+    if ($is_cron && empty($opts['enabled'])) {
+      self::log('Cron is disabled in settings, skipping import');
       return array('upserts' => 0, 'skipped' => 0, 'errors' => 0);
     }
 
@@ -135,6 +152,12 @@ class CE_EuroStocks_Importer {
       if (!$adId) { $skipped++; continue; }
 
       $detailUrl = $productBase . '/api/v1/productdatasupplier/productDetails/' . rawurlencode((string)$opts['location_id']) . '/' . rawurlencode((string)$adId);
+      
+      // Rate limiting: 100ms delay between API calls to avoid being blocked
+      if (!empty($opts['api_rate_limit'])) {
+        usleep(100000); // 100ms = 100,000 microseconds
+      }
+      
       $details = CE_EuroStocks_API::get_json($detailUrl, $opts);
         if (is_wp_error($details)) { $errors++; continue; }
 
@@ -462,7 +485,18 @@ class CE_EuroStocks_Importer {
     ));
 
     $deleted_posts = 0;
+    $deleted_attachments = 0;
+    
     foreach ($ids as $id) {
+      // Delete all attachments (images) attached to this post
+      $attachments = get_attached_media('', $id);
+      foreach ($attachments as $attachment) {
+        if (wp_delete_attachment($attachment->ID, true)) {
+          $deleted_attachments++;
+        }
+      }
+      
+      // Delete the post itself (force delete = true)
       $ok = wp_delete_post((int)$id, true);
       if ($ok) $deleted_posts++;
     }
@@ -483,6 +517,96 @@ class CE_EuroStocks_Importer {
       }
     }
 
-    return array('deleted_posts' => $deleted_posts, 'deleted_terms' => $deleted_terms);
+    return array('deleted_posts' => $deleted_posts, 'deleted_terms' => $deleted_terms, 'deleted_attachments' => $deleted_attachments);
+  }
+
+  /**
+   * Mark products that weren't seen in the last import as out of stock
+   * @param int $run_id The run ID from the last import
+   */
+  public static function mark_missing_out_of_stock($run_id) {
+    if (!$run_id) return;
+
+    // Find all posts that were NOT updated in this run
+    $missing = get_posts(array(
+      'post_type' => self::CPT,
+      'post_status' => 'any',
+      'fields' => 'ids',
+      'numberposts' => -1,
+      'meta_query' => array(
+        'relation' => 'OR',
+        array(
+          'key' => '_ce_last_seen',
+          'value' => $run_id,
+          'compare' => '!=',
+          'type' => 'NUMERIC',
+        ),
+        array(
+          'key' => '_ce_last_seen',
+          'compare' => 'NOT EXISTS',
+        ),
+      ),
+    ));
+
+    $marked = 0;
+    foreach ($missing as $post_id) {
+      update_post_meta($post_id, '_ce_stock', 0);
+      $marked++;
+    }
+
+    return $marked;
+  }
+
+  /**
+   * Delete products that weren't seen in the last import
+   * @param int $run_id The run ID from the last import
+   * @param bool $delete_attachments Whether to also delete attached images
+   * @return array Statistics about deletion
+   */
+  public static function delete_missing_posts($run_id, $delete_attachments = false) {
+    if (!$run_id) return array('deleted_posts' => 0, 'deleted_attachments' => 0);
+
+    // Find all posts that were NOT updated in this run
+    $missing = get_posts(array(
+      'post_type' => self::CPT,
+      'post_status' => 'any',
+      'fields' => 'ids',
+      'numberposts' => -1,
+      'meta_query' => array(
+        'relation' => 'OR',
+        array(
+          'key' => '_ce_last_seen',
+          'value' => $run_id,
+          'compare' => '!=',
+          'type' => 'NUMERIC',
+        ),
+        array(
+          'key' => '_ce_last_seen',
+          'compare' => 'NOT EXISTS',
+        ),
+      ),
+    ));
+
+    $deleted_posts = 0;
+    $deleted_attachments = 0;
+
+    foreach ($missing as $post_id) {
+      if ($delete_attachments) {
+        // Delete all attachments (images) attached to this post
+        $attachments = get_attached_media('', $post_id);
+        foreach ($attachments as $attachment) {
+          if (wp_delete_attachment($attachment->ID, true)) {
+            $deleted_attachments++;
+          }
+        }
+      }
+      
+      // Delete the post itself (force delete = true)
+      if (wp_delete_post($post_id, true)) {
+        $deleted_posts++;
+      }
+    }
+
+    return array('deleted_posts' => $deleted_posts, 'deleted_attachments' => $deleted_attachments);
   }
 }

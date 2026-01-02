@@ -19,6 +19,81 @@ WordPress plugin voor het importeren en synchroniseren van automotoren en versne
 5. Configureer de import instellingen
 6. Klik op "Start import nu" om de eerste import te draaien
 
+## Automatische Synchronisatie (Cron)
+
+De plugin gebruikt **WordPress WP-Cron** voor automatische dagelijkse synchronisatie.
+
+### Cron Activeren
+
+1. Ga naar **Instellingen → Creators EuroStocks Import**
+2. Vink aan: **"Sync inschakelen - Dagelijkse sync via WP-Cron"**
+3. Klik op **"Instellingen opslaan"**
+4. De cron wordt automatisch geactiveerd bij plugin activatie
+
+### Hoe werkt de Cron?
+
+- **Frequentie**: Eenmaal per dag
+- **Eerste run**: 2 minuten na plugin activatie
+- **Cron hook**: `ce_eurostocks_cron_sync`
+- **Automatisch**: Ja, zolang WordPress bezoekers krijgt (WP-Cron is bezoeker-gebaseerd)
+
+### Cron Status Controleren
+
+Je kunt de cron status controleren met een plugin zoals:
+- **WP Crontrol** (aanbevolen)
+- **Advanced Cron Manager**
+
+Met WP Crontrol kun je:
+- Zien wanneer de volgende sync gepland staat
+- Handmatig de cron triggeren voor testing
+- De cron hook `ce_eurostocks_cron_sync` bekijken
+
+### Echte Server Cron (Aanbevolen voor Productie)
+
+Voor betrouwbaarder synchronisatie kun je WordPress WP-Cron uitschakelen en een **echte server cron** instellen:
+
+**1. Schakel WordPress WP-Cron uit**
+
+Voeg toe aan `wp-config.php`:
+```php
+define('DISABLE_WP_CRON', true);
+```
+
+**2. Stel een server cron job in**
+
+Via cPanel, Plesk of SSH, voeg deze cron job toe:
+
+```bash
+# Draait elke dag om 3:00 's nachts
+0 3 * * * wget -q -O - https://jouwwebsite.nl/wp-cron.php?doing_wp_cron >/dev/null 2>&1
+```
+
+Of met `curl`:
+```bash
+0 3 * * * curl -s https://jouwwebsite.nl/wp-cron.php?doing_wp_cron >/dev/null 2>&1
+```
+
+**3. Test de cron**
+
+```bash
+# Handmatig triggeren via commandline
+wp cron event run ce_eurostocks_cron_sync
+```
+
+### Troubleshooting Cron
+
+**Cron draait niet?**
+
+1. Controleer of WP-Cron enabled is (niet `DISABLE_WP_CRON`)
+2. Zorg dat je website regelmatig bezoekers krijgt (WP-Cron wordt getriggerd door bezoeken)
+3. Controleer WordPress debug.log voor errors
+4. Test handmatig via WP Crontrol plugin
+
+**Import stopt halverwege?**
+
+- Verhoog `max_runtime` in de instellingen (bijv. van 20 naar 30 seconden)
+- De import herstart automatisch in batches als er een `cpl_continue=1` parameter is
+
 ## Configuratie
 
 ### API Instellingen

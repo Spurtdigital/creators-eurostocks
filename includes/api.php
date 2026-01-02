@@ -25,11 +25,11 @@ class CE_EuroStocks_API {
     $body = wp_remote_retrieve_body($res);
 
     if ($code < 200 || $code >= 300) {
-      return new WP_Error('cpl_api_http', 'API error (' . $code . '): ' . substr((string)$body, 0, 500));
+      return new WP_Error('ce_api_http', 'API error (' . $code . '): ' . substr((string)$body, 0, 500));
     }
 
     $json = json_decode($body, true);
-    if (!is_array($json)) return new WP_Error('cpl_api_json', 'JSON parse error: ' . substr((string)$body, 0, 300));
+    if (!is_array($json)) return new WP_Error('ce_api_json', 'JSON parse error: ' . substr((string)$body, 0, 300));
     return $json;
   }
 
@@ -45,11 +45,11 @@ class CE_EuroStocks_API {
     $body = wp_remote_retrieve_body($res);
 
     if ($code < 200 || $code >= 300) {
-      return new WP_Error('cpl_api_http', 'API error (' . $code . '): ' . substr((string)$body, 0, 800));
+      return new WP_Error('ce_api_http', 'API error (' . $code . '): ' . substr((string)$body, 0, 800));
     }
 
     $json = json_decode($body, true);
-    if (!is_array($json)) return new WP_Error('cpl_api_json', 'JSON parse error: ' . substr((string)$body, 0, 300));
+    if (!is_array($json)) return new WP_Error('ce_api_json', 'JSON parse error: ' . substr((string)$body, 0, 300));
     return $json;
   }
 }

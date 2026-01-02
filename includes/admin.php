@@ -77,7 +77,6 @@ class CE_EuroStocks_Admin {
         'download_images' => 1,
         'mark_missing_out_of_stock' => 0,
         'confirm_delete_missing' => 0,
-        'download_images' => 1,
         'max_runtime' => 20,
       ),
     ));
@@ -418,9 +417,42 @@ document.addEventListener('DOMContentLoaded', function(){
     check_admin_referer('ce_eurostocks_purge');
 
     $r = CE_EuroStocks_Importer::purge_all_data();
-    $msg = sprintf('Alles verwijderd. Posts: %d, Termen: %d.', (int)$r['deleted_posts'], (int)$r['deleted_terms']);
+    $msg = sprintf('Alles verwijderd. Posts: %d, Termen: %d, Afbeeldingen: %d.', (int)$r['deleted_posts'], (int)$r['deleted_terms'], (int)$r['deleted_attachments']);
     wp_redirect(CE_EuroStocks_Helpers::admin_url_with_msg(array('ce_msg' => rawurlencode($msg))));
     exit;
+  }
+
+  // Delegate to extension class for new features
+  public static function handle_test_location() {
+    return CE_EuroStocks_Admin_Extensions::handle_test_location();
+  }
+
+  public static function register_bulk_actions($bulk_actions) {
+    return CE_EuroStocks_Admin_Extensions::register_bulk_actions($bulk_actions);
+  }
+
+  public static function handle_bulk_actions($redirect_to, $doaction, $post_ids) {
+    return CE_EuroStocks_Admin_Extensions::handle_bulk_actions($redirect_to, $doaction, $post_ids);
+  }
+
+  public static function bulk_action_notices() {
+    return CE_EuroStocks_Admin_Extensions::bulk_action_notices();
+  }
+
+  public static function add_admin_filters($post_type) {
+    return CE_EuroStocks_Admin_Extensions::add_admin_filters($post_type);
+  }
+
+  public static function filter_admin_query($query) {
+    return CE_EuroStocks_Admin_Extensions::filter_admin_query($query);
+  }
+
+  public static function add_dashboard_widget() {
+    return CE_EuroStocks_Admin_Extensions::add_dashboard_widget();
+  }
+
+  public static function handle_export_csv() {
+    return CE_EuroStocks_Admin_Extensions::handle_export_csv();
   }
 
   public static function render_info_metabox($post) {
