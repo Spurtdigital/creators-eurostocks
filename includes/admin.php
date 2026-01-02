@@ -379,7 +379,11 @@ class CE_EuroStocks_Admin {
   }
   
   // Start auto-submit when DOM is ready
-  document.addEventListener('DOMContentLoaded', startAutoSubmit);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startAutoSubmit);
+  } else {
+    startAutoSubmit();
+  }
 })();
 </script>
 <?php endif; ?>
@@ -505,7 +509,7 @@ class CE_EuroStocks_Admin {
     $params = array('ce_msg' => rawurlencode($msg));
     
     // Add statistics to URL for display
-    if (!empty($result['total_records'])) $params['total_api'] = $result['total_records'];
+    if (isset($result['total_records']) && $result['total_records'] > 0) $params['total_api'] = $result['total_records'];
     if (!empty($result['db_total'])) $params['total_db'] = $result['db_total'];
     if (!empty($result['progress'])) $params['progress'] = $result['progress'];
 
