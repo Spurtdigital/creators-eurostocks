@@ -152,7 +152,12 @@ class CE_EuroStocks_Importer {
     if (!$run_id) { $run_id = time(); update_option('ce_eurostocks_run_id', $run_id); }
 
     $state = get_option('ce_eurostocks_import_state', array('page' => 1));
+
+    // Restore API totals from previous batch if available
+    $total_records = isset($state['total_records']) ? (int)$state['total_records'] : 0;
+    $total_pages = isset($state['total_pages']) ? (int)$state['total_pages'] : 0;
     $page_start = isset($state['page']) ? max(1, (int)$state['page']) : 1;
+    
 
     $searchUrl = $dataBase . '/api/v1/Search/list';
 
@@ -173,8 +178,13 @@ class CE_EuroStocks_Importer {
     }
 
     // Track API statistics
-    $total_records = isset($list['TotalRecords']) ? (int)$list['TotalRecords'] : 0;
-    $total_pages = isset($list['TotalPages']) ? (int)$list['TotalPages'] : 0;
+    // Update totals from API response (only if they exist)
+    if (isset($list['TotalRecords']) && $list['TotalRecords'] > 0) {
+      $total_records = (int)$list['TotalRecords'];
+    }
+    if (isset($list['TotalPages']) && $list['TotalPages'] > 0) {
+      $total_pages = (int)$list['TotalPages'];
+    }
     
     $results = isset($list['Results']) && is_array($list['Results']) ? $list['Results'] : array();
     if (empty($results)) break;
@@ -231,11 +241,7 @@ class CE_EuroStocks_Importer {
     $db_count = wp_count_posts(self::CPT);
     $db_total = ($db_count->publish ?? 0) + ($db_count->draft ?? 0) + ($db_count->pending ?? 0) + ($db_count->private ?? 0);
     
-    // Retrieve total from state if available
-    $final_state = get_option('ce_eurostocks_import_final_state', array());
-    $total_records = $final_state['total_records'] ?? 0;
-    $total_pages = $final_state['total_pages'] ?? 0;
-    delete_option('ce_eurostocks_import_final_state');
+    // $total_records and $total_pages are already set from the loop
     
     return array(
       'upserts' => $upserts, 

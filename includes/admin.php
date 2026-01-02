@@ -260,9 +260,18 @@ class CE_EuroStocks_Admin {
       $import_state = get_option('ce_eurostocks_import_state', array());
       $total_api = !empty($_GET['total_api']) ? absint($_GET['total_api']) : ($import_state['total_records'] ?? 0);
       $total_db = !empty($_GET['total_db']) ? absint($_GET['total_db']) : $db_total;
-      $progress = !empty($_GET['progress']) ? absint($_GET['progress']) : 0;
-      $current_page = !empty($_GET['current_page']) ? absint($_GET['current_page']) : 0;
-      $total_pages = !empty($_GET['total_pages']) ? absint($_GET['total_pages']) : 0;
+      $current_page = !empty($_GET['current_page']) ? absint($_GET['current_page']) : ($import_state['page'] ?? 0);
+      $total_pages = !empty($_GET['total_pages']) ? absint($_GET['total_pages']) : ($import_state['total_pages'] ?? 0);
+      
+      // Calculate progress from state if not in URL
+      if (!empty($_GET['progress'])) {
+        $progress = absint($_GET['progress']);
+      } elseif ($total_pages > 0 && $current_page > 0) {
+        $progress = round(($current_page / $total_pages) * 100);
+      } else {
+        $progress = 0;
+      }
+      
       $is_running = !empty($_GET['ce_continue']);
       $is_complete = !empty($_GET['import_complete']);
       ?>
