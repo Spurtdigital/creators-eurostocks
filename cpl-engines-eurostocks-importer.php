@@ -1,16 +1,16 @@
 <?php
 /**
- * Plugin Name: CPL Engines – EuroStocks Importer
+ * Plugin Name: Creators EuroStocks Importer
  * Description: Import/sync automotoren en/of versnellingsbakken vanuit EuroStocks (Data API + Product Data API) naar een CPT met taxonomieën.
- * Version: 0.3.7
- * Author: CPL Engines
+ * Version: 0.4.0
+ * Author: Creators
  * Requires at least: 5.8
  * Requires PHP: 7.4
  */
 
 if (!defined('ABSPATH')) { exit; }
 
-define('CPL_EUROSTOCKS_VERSION', '0.3.7');
+define('CPL_EUROSTOCKS_VERSION', '0.4.0');
 define('CPL_EUROSTOCKS_PLUGIN_FILE', __FILE__);
 define('CPL_EUROSTOCKS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CPL_EUROSTOCKS_PLUGIN_URL', plugin_dir_url(__FILE__));

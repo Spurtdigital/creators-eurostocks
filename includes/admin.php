@@ -8,7 +8,11 @@ class CPL_EuroStocks_Admin {
   }
 
   public static function register_metabox() {
-    add_meta_box('cpl_eurostocks_metabox', 'EuroStocks info', array(__CLASS__, 'render_metabox'), CPL_EuroStocks_Importer::CPT, 'normal', 'default');
+    add_meta_box('cpl_eurostocks_info', 'EuroStocks Info', array(__CLASS__, 'render_info_metabox'), CPL_EuroStocks_Importer::CPT, 'normal', 'high');
+    add_meta_box('cpl_eurostocks_specs', 'Specificaties', array(__CLASS__, 'render_specs_metabox'), CPL_EuroStocks_Importer::CPT, 'normal', 'high');
+    add_meta_box('cpl_eurostocks_price', 'Prijs & Voorraad', array(__CLASS__, 'render_price_metabox'), CPL_EuroStocks_Importer::CPT, 'side', 'high');
+    add_meta_box('cpl_eurostocks_gallery', 'Afbeeldingen', array(__CLASS__, 'render_gallery_metabox'), CPL_EuroStocks_Importer::CPT, 'side', 'default');
+    add_meta_box('cpl_eurostocks_debug', 'Debug & Diagnostics', array(__CLASS__, 'render_metabox'), CPL_EuroStocks_Importer::CPT, 'normal', 'low');
   }
 
   public static function render_metabox($post) {
@@ -43,8 +47,8 @@ class CPL_EuroStocks_Admin {
 
   public static function menu() {
     add_options_page(
-      'CPL Engines Import',
-      'CPL Engines Import',
+      'Creators EuroStocks Import',
+      'Creators EuroStocks Import',
       'manage_options',
       'cpl-engines-import',
       array(__CLASS__, 'render_settings_page')
@@ -161,7 +165,7 @@ class CPL_EuroStocks_Admin {
           <tr>
             <th scope="row"><label>Location ID</label></th>
             <td><input type="number" class="small-text" name="<?php echo esc_attr(CPL_EuroStocks_Importer::OPT_KEY); ?>[location_id]" value="<?php echo esc_attr($opts['location_id'] ?? 0); ?>" />
-            <p class="description">Voor CPL Engines / Neede is dit vaak 915.</p></td>
+            <p class="description">Bijvoorbeeld 915</p></td>
           </tr>
           <tr>
             <th scope="row"><label>Taal (ISO)</label></th>
@@ -417,5 +421,218 @@ document.addEventListener('DOMContentLoaded', function(){
     $msg = sprintf('Alles verwijderd. Posts: %d, Termen: %d.', (int)$r['deleted_posts'], (int)$r['deleted_terms']);
     wp_redirect(CPL_EuroStocks_Helpers::admin_url_with_msg(array('cpl_msg' => rawurlencode($msg))));
     exit;
+  }
+
+  public static function render_info_metabox($post) {
+    $eurostocks_id = get_post_meta($post->ID, '_cpl_eurostocks_ad_id', true);
+    $last_seen = get_post_meta($post->ID, '_cpl_last_seen', true);
+    $created = get_post_meta($post->ID, '_cpl_created_date', true);
+    $updated = get_post_meta($post->ID, '_cpl_last_updated_date', true);
+    
+    echo '<div style="padding:8px 0;">';
+    if ($eurostocks_id) {
+      echo '<p style="margin:8px 0;"><strong>EuroStocks ID:</strong> <code>' . esc_html($eurostocks_id) . '</code></p>';
+    }
+    if ($last_seen) {
+      echo '<p style="margin:8px 0;"><strong>Laatst gesynchroniseerd:</strong> ' . esc_html(date('d-m-Y H:i', (int)$last_seen)) . '</p>';
+    }
+    if ($created) {
+      echo '<p style="margin:8px 0;"><strong>Aangemaakt in EuroStocks:</strong> ' . esc_html($created) . '</p>';
+    }
+    if ($updated) {
+      echo '<p style="margin:8px 0;"><strong>Laatst gewijzigd in EuroStocks:</strong> ' . esc_html($updated) . '</p>';
+    }
+    echo '</div>';
+  }
+
+  public static function render_price_metabox($post) {
+    $price = get_post_meta($post->ID, '_cpl_price', true);
+    $currency = get_post_meta($post->ID, '_cpl_price_currency', true);
+    $price_incl_vat = get_post_meta($post->ID, '_cpl_price_incl_vat', true);
+    $vat_percentage = get_post_meta($post->ID, '_cpl_price_vat_percentage', true);
+    $price_ex_vat = get_post_meta($post->ID, '_cpl_price_ex_vat', true);
+    $stock = get_post_meta($post->ID, '_cpl_stock', true);
+    $condition = get_post_meta($post->ID, '_cpl_condition', true);
+    $delivery = get_post_meta($post->ID, '_cpl_delivery', true);
+    
+    echo '<div style="padding:8px 0;">';
+    if ($price) {
+      $symbol = ($currency === 'EUR' || !$currency) ? '€' : $currency;
+      echo '<p style="margin:8px 0;"><strong>Prijs:</strong><br>';
+      echo '<span style="font-size:24px; color:#2c5f2d; font-weight:bold;">' . esc_html($symbol) . ' ' . esc_html(number_format((float)$price, 2, ',', '.')) . '</span>';
+      if ($price_ex_vat) echo '<br><small>Excl. BTW</small>';
+      echo '</p>';
+      if ($price_incl_vat) {
+        echo '<p style="margin:8px 0;"><strong>Incl. BTW:</strong> ' . esc_html($symbol) . ' ' . esc_html(number_format((float)$price_incl_vat, 2, ',', '.')) . '</p>';
+      }
+      if ($vat_percentage) {
+        echo '<p style="margin:8px 0;"><strong>BTW %:</strong> ' . esc_html($vat_percentage) . '%</p>';
+      }
+    }
+    echo '<hr style="margin:12px 0;">';
+    echo '<p style="margin:8px 0;"><strong>Voorraad:</strong><br>';
+    if ($stock !== '') {
+      if ((int)$stock > 0) {
+        echo '<span style="display:inline-block; background:#d4edda; color:#155724; padding:6px 12px; border-radius:4px; font-weight:bold;">✓ Op voorraad (' . esc_html($stock) . ')</span>';
+      } else {
+        echo '<span style="display:inline-block; background:#f8d7da; color:#721c24; padding:6px 12px; border-radius:4px; font-weight:bold;">✗ Niet op voorraad</span>';
+      }
+    } else {
+      echo '<span style="color:#999;">Onbekend</span>';
+    }
+    echo '</p>';
+    if ($condition) {
+      echo '<p style="margin:8px 0;"><strong>Conditie:</strong> ' . esc_html($condition) . '</p>';
+    }
+    if ($delivery) {
+      echo '<p style="margin:8px 0;"><strong>Levering:</strong> ' . esc_html($delivery) . '</p>';
+    }
+    echo '</div>';
+  }
+
+  public static function render_specs_metabox($post) {
+    echo '<table class="form-table" style="margin:0;"><tbody>';
+    $specs = array(
+      array('Motor', array(
+        array('Motorinhoud', '_cpl_engine_capacity'),
+        array('Vermogen', '_cpl_power_kw', '_cpl_power_hp'),
+        array('Brandstof', '_cpl_fuel', '_cpl_fuel_type'),
+      )),
+      array('Versnellingsbak', array(
+        array('Transmissie', '_cpl_transmission'),
+        array('Versnellingsbak type', '_cpl_gear_type'),
+      )),
+      array('Conditie', array(
+        array('Kilometerstand', '_cpl_km_value', '_cpl_km_raw'),
+        array('Garantie', '_cpl_warranty_months', '_cpl_warranty_raw'),
+      )),
+      array('Identificatie', array(
+        array('Fabrikant', '_cpl_manufacturer'),
+        array('Bouwjaar', '_cpl_year'),
+        array('Onderdeelnummer', '_cpl_part_number', 'code'),
+        array('OEM nummer', '_cpl_oem_number', 'code'),
+        array('EAN', '_cpl_ean', 'code'),
+        array('SKU', '_cpl_sku', 'code'),
+      )),
+      array('Fysiek', array(
+        array('Gewicht', '_cpl_weight'),
+        array('Afmetingen (LxBxH)', '_cpl_length', '_cpl_width', '_cpl_height', 'dimensions'),
+        array('Kleur', '_cpl_color'),
+      )),
+      array('Leverancier', array(
+        array('Leverancier', '_cpl_supplier_name'),
+        array('Locatie', '_cpl_location'),
+      )),
+    );
+    
+    foreach ($specs as $section) {
+      $section_printed = false;
+      foreach ($section[1] as $field) {
+        $label = $field[0];
+        $value = null;
+        $format_type = isset($field[count($field) - 1]) && is_string($field[count($field) - 1]) && !strpos($field[count($field) - 1], '_cpl_') ? $field[count($field) - 1] : null;
+        
+        if ($format_type === 'code' || $format_type === 'dimensions') {
+          $values = array();
+          for ($i = 1; $i < count($field); $i++) {
+            if (strpos($field[$i], '_cpl_') === 0) {
+              $v = get_post_meta($post->ID, $field[$i], true);
+              if ($v) $values[] = $v;
+            }
+          }
+          if (!empty($values)) {
+            if ($format_type === 'dimensions') {
+              $value = implode(' x ', array_map('esc_html', $values));
+            } else {
+              $value = '<code>' . esc_html($values[0]) . '</code>';
+            }
+          }
+        } elseif (count($field) === 4 && $field[1] === '_cpl_km_value') {
+          $km_value = get_post_meta($post->ID, '_cpl_km_value', true);
+          $km_raw = get_post_meta($post->ID, '_cpl_km_raw', true);
+          if ($km_value) {
+            $value = esc_html(number_format((int)$km_value, 0, ',', '.')) . ' km';
+          } elseif ($km_raw) {
+            $value = esc_html($km_raw);
+          }
+        } elseif (count($field) === 4 && $field[1] === '_cpl_warranty_months') {
+          $months = get_post_meta($post->ID, '_cpl_warranty_months', true);
+          $raw = get_post_meta($post->ID, '_cpl_warranty_raw', true);
+          if ($months) {
+            $m = (int)$months;
+            if ($m >= 12 && $m % 12 === 0) {
+              $value = ($m / 12) . ' jaar';
+            } else {
+              $value = $m . ' ' . ($m === 1 ? 'maand' : 'maanden');
+            }
+          } elseif ($raw) {
+            $value = esc_html($raw);
+          }
+        } elseif (count($field) === 4 && $field[1] === '_cpl_power_kw') {
+          $kw = get_post_meta($post->ID, '_cpl_power_kw', true);
+          $hp = get_post_meta($post->ID, '_cpl_power_hp', true);
+          if ($kw || $hp) {
+            $parts = array();
+            if ($kw) $parts[] = esc_html($kw) . ' kW';
+            if ($hp) $parts[] = esc_html($hp) . ' pk';
+            $value = implode(' / ', $parts);
+          }
+        } elseif (count($field) === 4 && $field[1] === '_cpl_fuel') {
+          $fuel = get_post_meta($post->ID, '_cpl_fuel', true);
+          $fuel_type = get_post_meta($post->ID, '_cpl_fuel_type', true);
+          $value = $fuel ? esc_html($fuel) : ($fuel_type ? esc_html($fuel_type) : null);
+        } else {
+          for ($i = 1; $i < count($field); $i++) {
+            if (strpos($field[$i], '_cpl_') === 0) {
+              $v = get_post_meta($post->ID, $field[$i], true);
+              if ($v) {
+                $value = esc_html($v);
+                break;
+              }
+            }
+          }
+        }
+        
+        if ($value) {
+          if (!$section_printed) {
+            echo '<tr><th colspan="2" style="padding:12px 0 4px 0; border-bottom:2px solid #ddd;"><strong>' . esc_html($section[0]) . '</strong></th></tr>';
+            $section_printed = true;
+          }
+          echo '<tr><th style="width:40%; padding:8px 0;">' . esc_html($label) . '</th><td style="padding:8px 0;">' . $value . '</td></tr>';
+        }
+      }
+    }
+    echo '</tbody></table>';
+  }
+
+  public static function render_gallery_metabox($post) {
+    $gallery_json = get_post_meta($post->ID, '_cpl_gallery', true);
+    $gallery = $gallery_json ? json_decode($gallery_json, true) : array();
+    
+    if (!empty($gallery) && is_array($gallery)) {
+      echo '<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">';
+      foreach ($gallery as $index => $attachment_id) {
+        $img = wp_get_attachment_image($attachment_id, 'thumbnail', false, array('style' => 'width:100%; height:auto; border-radius:4px;'));
+        if ($img) {
+          echo '<div style="position:relative;">';
+          echo '<a href="' . esc_url(wp_get_attachment_url($attachment_id)) . '" target="_blank">' . $img . '</a>';
+          if ($index === 0) {
+            echo '<span style="position:absolute; top:4px; right:4px; background:rgba(0,0,0,0.7); color:white; padding:2px 6px; border-radius:3px; font-size:10px;">Uitgelicht</span>';
+          }
+          echo '</div>';
+        }
+      }
+      echo '</div>';
+      echo '<p style="margin-top:8px; font-size:12px; color:#666;">Totaal: ' . count($gallery) . ' afbeeldingen</p>';
+    } else {
+      echo '<p style="color:#999;">Geen afbeeldingen beschikbaar.</p>';
+    }
+    
+    $img_err = get_post_meta($post->ID, '_cpl_image_errors', true);
+    if (!empty($img_err)) {
+      echo '<details style="margin-top:12px;"><summary style="cursor:pointer; color:#d63638;">⚠ Afbeeldingen errors</summary>';
+      echo '<pre style="background:#fff; padding:8px; border:1px solid #ddd; border-radius:4px; font-size:11px; overflow:auto; max-height:200px; margin-top:8px;">' . esc_html($img_err) . '</pre>';
+      echo '</details>';
+    }
   }
 }

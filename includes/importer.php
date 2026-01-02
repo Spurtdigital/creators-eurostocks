@@ -234,16 +234,55 @@ class CPL_EuroStocks_Importer {
     update_post_meta($post_id, '_cpl_raw_details', wp_json_encode($details));
     update_option('cpl_eurostocks_last_raw', wp_json_encode($details));
 
+    // Core EuroStocks fields
     if (isset($details['stock'])) update_post_meta($post_id, '_cpl_stock', (int)$details['stock']);
+    if (isset($details['condition'])) update_post_meta($post_id, '_cpl_condition', (string)$details['condition']);
+    if (isset($details['delivery'])) update_post_meta($post_id, '_cpl_delivery', (string)$details['delivery']);
+    if (isset($details['subCategory'])) update_post_meta($post_id, '_cpl_subcategory', (string)$details['subCategory']);
+    if (isset($details['productType'])) update_post_meta($post_id, '_cpl_product_type', (string)$details['productType']);
 
+    // Price info (handle different structures)
     $price = null;
-    if (isset($details['priceInfo']) && is_array($details['priceInfo']) && isset($details['priceInfo']['PRICE']) && $details['priceInfo']['PRICE'] !== '') {
-      $price = (string)$details['priceInfo']['PRICE'];
+    if (isset($details['priceInfo']) && is_array($details['priceInfo'])) {
+      if (isset($details['priceInfo']['PRICE']) && $details['priceInfo']['PRICE'] !== '') {
+        $price = (string)$details['priceInfo']['PRICE'];
+      }
+      // Store all price fields
+      if (isset($details['priceInfo']['CURRENCY'])) update_post_meta($post_id, '_cpl_price_currency', (string)$details['priceInfo']['CURRENCY']);
+      if (isset($details['priceInfo']['VAT_PERCENTAGE'])) update_post_meta($post_id, '_cpl_price_vat_percentage', (string)$details['priceInfo']['VAT_PERCENTAGE']);
+      if (isset($details['priceInfo']['PRICE_INCL_VAT'])) update_post_meta($post_id, '_cpl_price_incl_vat', (string)$details['priceInfo']['PRICE_INCL_VAT']);
     }
     if ($price !== null) update_post_meta($post_id, '_cpl_price', $price);
 
-    if (isset($details['condition'])) update_post_meta($post_id, '_cpl_condition', (string)$details['condition']);
-    if (isset($details['delivery'])) update_post_meta($post_id, '_cpl_delivery', (string)$details['delivery']);
+    // Additional product info fields
+    if (!empty($productInfo)) {
+      if (isset($productInfo['EAN'])) update_post_meta($post_id, '_cpl_ean', (string)$productInfo['EAN']);
+      if (isset($productInfo['SKU'])) update_post_meta($post_id, '_cpl_sku', (string)$productInfo['SKU']);
+      if (isset($productInfo['WEIGHT'])) update_post_meta($post_id, '_cpl_weight', (string)$productInfo['WEIGHT']);
+      if (isset($productInfo['HEIGHT'])) update_post_meta($post_id, '_cpl_height', (string)$productInfo['HEIGHT']);
+      if (isset($productInfo['WIDTH'])) update_post_meta($post_id, '_cpl_width', (string)$productInfo['WIDTH']);
+      if (isset($productInfo['LENGTH'])) update_post_meta($post_id, '_cpl_length', (string)$productInfo['LENGTH']);
+      if (isset($productInfo['COLOR'])) update_post_meta($post_id, '_cpl_color', (string)$productInfo['COLOR']);
+      if (isset($productInfo['YEAR'])) update_post_meta($post_id, '_cpl_year', (string)$productInfo['YEAR']);
+      if (isset($productInfo['ENGINE_CAPACITY'])) update_post_meta($post_id, '_cpl_engine_capacity', (string)$productInfo['ENGINE_CAPACITY']);
+      if (isset($productInfo['POWER_KW'])) update_post_meta($post_id, '_cpl_power_kw', (string)$productInfo['POWER_KW']);
+      if (isset($productInfo['POWER_HP'])) update_post_meta($post_id, '_cpl_power_hp', (string)$productInfo['POWER_HP']);
+      if (isset($productInfo['FUEL_TYPE'])) update_post_meta($post_id, '_cpl_fuel_type', (string)$productInfo['FUEL_TYPE']);
+      if (isset($productInfo['TRANSMISSION'])) update_post_meta($post_id, '_cpl_transmission', (string)$productInfo['TRANSMISSION']);
+      if (isset($productInfo['GEAR_TYPE'])) update_post_meta($post_id, '_cpl_gear_type', (string)$productInfo['GEAR_TYPE']);
+      if (isset($productInfo['MANUFACTURER'])) update_post_meta($post_id, '_cpl_manufacturer', (string)$productInfo['MANUFACTURER']);
+      if (isset($productInfo['PART_NUMBER'])) update_post_meta($post_id, '_cpl_part_number', (string)$productInfo['PART_NUMBER']);
+      if (isset($productInfo['OEM_NUMBER'])) update_post_meta($post_id, '_cpl_oem_number', (string)$productInfo['OEM_NUMBER']);
+    }
+
+    // Location/Supplier info
+    if (isset($details['location'])) update_post_meta($post_id, '_cpl_location', (string)$details['location']);
+    if (isset($details['supplierName'])) update_post_meta($post_id, '_cpl_supplier_name', (string)$details['supplierName']);
+    if (isset($details['supplierId'])) update_post_meta($post_id, '_cpl_supplier_id', (string)$details['supplierId']);
+
+    // Dates
+    if (isset($details['createdDate'])) update_post_meta($post_id, '_cpl_created_date', (string)$details['createdDate']);
+    if (isset($details['lastUpdatedDate'])) update_post_meta($post_id, '_cpl_last_updated_date', (string)$details['lastUpdatedDate']);
 
     // Parsed from description
     if (!empty($km['raw'])) update_post_meta($post_id, '_cpl_km_raw', (string)$km['raw']);
@@ -252,7 +291,11 @@ class CPL_EuroStocks_Importer {
     if (!is_null($gar['months'])) update_post_meta($post_id, '_cpl_warranty_months', (int)$gar['months']);
     if (!empty($fuel)) update_post_meta($post_id, '_cpl_fuel', (string)$fuel);
     update_post_meta($post_id, '_cpl_price_ex_vat', (int)$price_ex_vat);
-    if (isset($details['images']) && is_array($details['images'])) update_post_meta($post_id, '_cpl_images', wp_json_encode($details['images']));
+    
+    // Store image URLs array for reference
+    if (isset($details['images']) && is_array($details['images'])) {
+      update_post_meta($post_id, '_cpl_images', wp_json_encode($details['images']));
+    }
 
     // Media: download images into WP media library (optional)
     if (!empty($opts['download_images']) && !empty($details['images']) && is_array($details['images'])) {
