@@ -5,6 +5,46 @@ class CE_EuroStocks_Admin {
 
   public static function hooks() {
     add_action('add_meta_boxes', array(__CLASS__, 'register_metabox'));
+    add_action('admin_notices', array(__CLASS__, 'taxonomy_update_notice'));
+  }
+
+  public static function taxonomy_update_notice() {
+    $dismissed = get_option('ce_eurostocks_taxonomy_notice_dismissed', false);
+    if ($dismissed) {
+      return;
+    }
+
+    $screen = get_current_screen();
+    if (!$screen || strpos($screen->id, 'ce_part') === false) {
+      return;
+    }
+
+    ?>
+    <div class="notice notice-warning is-dismissible" id="ce-taxonomy-notice">
+      <p>
+        <strong><?php _e('EuroStocks Plugin Update:', 'creators-eurostocks'); ?></strong>
+        <?php _e('De taxonomie structuur is bijgewerkt. Ga naar', 'creators-eurostocks'); ?>
+        <a href="<?php echo esc_url(admin_url('options-permalink.php')); ?>"><?php _e('Instellingen → Permalinks', 'creators-eurostocks'); ?></a>
+        <?php _e('en klik op "Wijzigingen opslaan" om de nieuwe URL structuur te activeren.', 'creators-eurostocks'); ?>
+      </p>
+      <script>
+        jQuery(document).ready(function($) {
+          $('#ce-taxonomy-notice').on('click', '.notice-dismiss', function() {
+            $.post(ajaxurl, {
+              action: 'ce_eurostocks_dismiss_taxonomy_notice',
+              _wpnonce: '<?php echo wp_create_nonce('ce_dismiss_taxonomy_notice'); ?>'
+            });
+          });
+        });
+      </script>
+    </div>
+    <?php
+  }
+
+  public static function ajax_dismiss_taxonomy_notice() {
+    check_ajax_referer('ce_dismiss_taxonomy_notice');
+    update_option('ce_eurostocks_taxonomy_notice_dismissed', true);
+    wp_send_json_success();
   }
 
   public static function register_metabox() {
