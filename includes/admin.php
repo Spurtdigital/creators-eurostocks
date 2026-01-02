@@ -352,25 +352,38 @@ class CE_EuroStocks_Admin {
 
       <?php if (!empty($_GET['ce_continue'])): ?>
 <script>
+console.log('EUROSTOCKS: Auto-continue script loading...');
 (function(){
   var autoSubmitTimer = null;
   var stopButton = document.getElementById('ce-stop-import');
   var importForm = document.getElementById('ce-import-form');
+  console.log('EUROSTOCKS: Form found:', !!importForm, 'Stop button found:', !!stopButton);
   
   function startAutoSubmit() {
+    console.log('EUROSTOCKS: Starting auto-submit timer (2 seconds)');
     autoSubmitTimer = setTimeout(function(){
+      console.log('EUROSTOCKS: Timer expired, attempting submit...');
       if (importForm) {
-        importForm.submit();
+        var submitBtn = importForm.querySelector('input[type="submit"]');
+        if (submitBtn) {
+          console.log('EUROSTOCKS: Clicking submit button');
+          submitBtn.click();
+        } else {
+          console.log('EUROSTOCKS: Submit button not found, using form.submit()');
+          importForm.submit();
+        }
+      } else {
+        console.error('EUROSTOCKS: Import form not found!');
       }
     }, 2000);
   }
   
   function stopAutoSubmit() {
+    console.log('EUROSTOCKS: Stop button clicked');
     if (autoSubmitTimer) {
       clearTimeout(autoSubmitTimer);
       autoSubmitTimer = null;
     }
-    // Redirect to settings page without continue parameter
     window.location.href = <?php echo wp_json_encode(admin_url('options-general.php?page=ce-import&ce_msg=' . rawurlencode('Import gestopt door gebruiker'))); ?>;
   }
   
@@ -378,10 +391,11 @@ class CE_EuroStocks_Admin {
     stopButton.addEventListener('click', stopAutoSubmit);
   }
   
-  // Start auto-submit when DOM is ready
   if (document.readyState === 'loading') {
+    console.log('EUROSTOCKS: DOM loading, waiting for DOMContentLoaded');
     document.addEventListener('DOMContentLoaded', startAutoSubmit);
   } else {
+    console.log('EUROSTOCKS: DOM ready, starting immediately');
     startAutoSubmit();
   }
 })();
@@ -529,19 +543,50 @@ class CE_EuroStocks_Admin {
   
   private static function log_import_run($result) {
     $log = get_option('ce_eurostocks_import_log', array());
+    $run_id = get_option('ce_eurostocks_run_id', 0);
     
-    $entry = array(
-      'timestamp' => current_time('mysql'),
-      'upserts' => $result['upserts'] ?? 0,
-      'skipped' => $result['skipped'] ?? 0,
-      'errors' => $result['errors'] ?? 0,
-      'continue' => !empty($result['continue']),
-      'page' => $result['current_page'] ?? null,
-      'total_pages' => $result['total_pages'] ?? null,
-      'completed' => !empty($result['completed']),
-    );
+    // Check if this is a continuation of an existing run
+    $is_continuation = !empty($result['continue']);
+    $is_completion = !empty($result['completed']);
     
-    array_unshift($log, $entry);
+    // Find existing entry for this run_id
+    $existing_index = null;
+    foreach ($log as $index => $entry) {
+      if (isset($entry['run_id']) && $entry['run_id'] == $run_id) {
+        $existing_index = $index;
+        break;
+      }
+    }
+    
+    if ($existing_index !== null) {
+      // Update existing entry
+      $log[$existing_index]['upserts'] += $result['upserts'] ?? 0;
+      $log[$existing_index]['skipped'] += $result['skipped'] ?? 0;
+      $log[$existing_index]['errors'] += $result['errors'] ?? 0;
+      $log[$existing_index]['page'] = $result['current_page'] ?? $log[$existing_index]['page'];
+      $log[$existing_index]['total_pages'] = $result['total_pages'] ?? $log[$existing_index]['total_pages'];
+      $log[$existing_index]['timestamp'] = current_time('mysql');
+      
+      if ($is_completion) {
+        $log[$existing_index]['completed'] = true;
+        $log[$existing_index]['continue'] = false;
+      }
+    } else {
+      // Create new entry
+      $entry = array(
+        'run_id' => $run_id,
+        'timestamp' => current_time('mysql'),
+        'upserts' => $result['upserts'] ?? 0,
+        'skipped' => $result['skipped'] ?? 0,
+        'errors' => $result['errors'] ?? 0,
+        'continue' => $is_continuation,
+        'page' => $result['current_page'] ?? null,
+        'total_pages' => $result['total_pages'] ?? null,
+        'completed' => $is_completion,
+      );
+      
+      array_unshift($log, $entry);
+    }
     
     // Keep last 50 entries
     $log = array_slice($log, 0, 50);
